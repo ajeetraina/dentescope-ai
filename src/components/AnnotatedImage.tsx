@@ -27,7 +27,6 @@ interface AnnotatedImageProps {
 
 export function AnnotatedImage({ imageFile, imageUrl, analysisData }: AnnotatedImageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     if (!canvasRef.current || (!imageFile && !imageUrl)) return;
@@ -47,8 +46,8 @@ export function AnnotatedImage({ imageFile, imageUrl, analysisData }: AnnotatedI
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0);
       
-      // Draw annotations
-      drawAnnotations(ctx, canvas.width, canvas.height);
+      // Draw annotations matching the reference format exactly
+      drawReferenceStyleAnnotations(ctx, canvas.width, canvas.height);
     };
 
     if (imageFile) {
@@ -64,101 +63,173 @@ export function AnnotatedImage({ imageFile, imageUrl, analysisData }: AnnotatedI
     };
   }, [imageFile, imageUrl, analysisData]);
 
-  const drawAnnotations = (ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number) => {
-    const toothWidthAnalysis = analysisData?.tooth_width_analysis;
-    const primaryMolar = toothWidthAnalysis?.primary_second_molar;
-    const premolar = toothWidthAnalysis?.second_premolar;
-    
-    // Check if required data exists
-    if (!primaryMolar?.coordinates || !premolar?.coordinates) {
-      console.warn('Coordinates not available for annotation');
-      return;
-    }
+  const drawReferenceStyleAnnotations = (ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number) => {
+    const toothData = analysisData?.tooth_width_analysis;
+    if (!toothData) return;
 
-    // Scale coordinates to canvas size
-    const scaleX = canvasWidth / 800; // Adjust based on typical image width
-    const scaleY = canvasHeight / 600; // Adjust based on typical image height
-    
-    // Primary second molar coordinates
-    const molarX = primaryMolar.coordinates.x * scaleX;
-    const molarY = primaryMolar.coordinates.y * scaleY;
-    const molarWidth = primaryMolar.coordinates.width * scaleX;
-    const molarHeight = primaryMolar.coordinates.height * scaleY;
-    
-    // Second premolar coordinates
+    const primaryMolar = toothData.primary_second_molar;
+    const premolar = toothData.second_premolar;
+    const widthDiff = toothData.width_difference;
+
+    // Scale coordinates to actual canvas size
+    const scaleX = canvasWidth / 1200; // Typical panoramic X-ray width
+    const scaleY = canvasHeight / 800;  // Typical panoramic X-ray height
+
+    // Get actual tooth positions from analysis
+    const primaryMolarX = primaryMolar.coordinates.x * scaleX;
+    const primaryMolarY = primaryMolar.coordinates.y * scaleY;
     const premolarX = premolar.coordinates.x * scaleX;
     const premolarY = premolar.coordinates.y * scaleY;
-    const premolarWidthCoord = premolar.coordinates.width * scaleX;
-    const premolarHeight = premolar.coordinates.height * scaleY;
 
-    // Draw primary second molar (blue)
-    ctx.strokeStyle = '#3b82f6'; // Blue
-    ctx.fillStyle = 'rgba(59, 130, 246, 0.2)';
+    // 1. Draw measurement boxes in upper area (like reference image)
+    const boxWidth = 150;
+    const boxHeight = 60;
+    const padding = 20;
+
+    // Primary Molar box (blue) - upper left
+    const primaryBoxX = padding;
+    const primaryBoxY = padding;
+    
+    // Draw blue box with white background
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(primaryBoxX, primaryBoxY, boxWidth, boxHeight);
+    ctx.strokeStyle = '#3b82f6';
     ctx.lineWidth = 3;
-    ctx.font = '14px system-ui';
-
-    ctx.fillRect(molarX, molarY, molarWidth, molarHeight);
-    ctx.strokeRect(molarX, molarY, molarWidth, molarHeight);
+    ctx.strokeRect(primaryBoxX, primaryBoxY, boxWidth, boxHeight);
     
-    // Label for primary second molar
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(molarX, molarY - 35, 200, 30);
+    // Blue box text
     ctx.fillStyle = '#1e40af';
-    ctx.font = 'bold 14px system-ui';
-    ctx.fillText('Primary Molar:', molarX + 5, molarY - 20);
-    ctx.font = '12px system-ui';
-    ctx.fillText(`${primaryMolar.width_mm.toFixed(2)}mm`, molarX + 5, molarY - 5);
+    ctx.font = 'bold 14px Arial';
+    ctx.fillText('Primary Molar:', primaryBoxX + 8, primaryBoxY + 20);
+    ctx.font = '16px Arial';
+    ctx.fillText(`${primaryMolar.width_mm.toFixed(2)}mm`, primaryBoxX + 8, primaryBoxY + 45);
 
-    // Draw second premolar (green)
-    ctx.fillStyle = 'rgba(16, 185, 129, 0.2)'; // Green
-    ctx.strokeStyle = '#10b981';
-    ctx.fillRect(premolarX, premolarY, premolarWidthCoord, premolarHeight);
-    ctx.strokeRect(premolarX, premolarY, premolarWidthCoord, premolarHeight);
+    // Premolar box (green) - upper right
+    const premolarBoxX = canvasWidth - boxWidth - padding;
+    const premolarBoxY = padding;
     
-    // Label for second premolar
+    // Draw green box with white background
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(premolarX, premolarY - 35, 180, 30);
-    ctx.fillStyle = '#047857';
-    ctx.font = 'bold 14px system-ui';
-    ctx.fillText('Premolar:', premolarX + 5, premolarY - 20);
-    ctx.font = '12px system-ui';
-    ctx.fillText(`${premolar.width_mm.toFixed(2)}mm`, premolarX + 5, premolarY - 5);
-
-    // Draw measurement line between teeth (red)
-    ctx.strokeStyle = '#ef4444'; // Red
-    ctx.lineWidth = 2;
-    ctx.setLineDash([10, 5]);
+    ctx.fillRect(premolarBoxX, premolarBoxY, boxWidth, boxHeight);
+    ctx.strokeStyle = '#10b981';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(premolarBoxX, premolarBoxY, boxWidth, boxHeight);
     
-    const molarCenter = {
-      x: molarX + molarWidth / 2,
-      y: molarY + molarHeight / 2
-    };
-    const premolarCenter = {
-      x: premolarX + premolarWidthCoord / 2,
-      y: premolarY + premolarHeight / 2
-    };
+    // Green box text
+    ctx.fillStyle = '#047857';
+    ctx.font = 'bold 14px Arial';
+    ctx.fillText('Premolar:', premolarBoxX + 8, premolarBoxY + 20);
+    ctx.font = '16px Arial';
+    ctx.fillText(`${premolar.width_mm.toFixed(2)}mm`, premolarBoxX + 8, premolarBoxY + 45);
 
+    // 2. Draw red dashed line connecting the boxes
+    ctx.setLineDash([8, 4]);
+    ctx.strokeStyle = '#ef4444';
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(molarCenter.x, molarCenter.y);
-    ctx.lineTo(premolarCenter.x, premolarCenter.y);
+    ctx.moveTo(primaryBoxX + boxWidth, primaryBoxY + boxHeight / 2);
+    ctx.lineTo(premolarBoxX, premolarBoxY + boxHeight / 2);
     ctx.stroke();
+    ctx.setLineDash([]); // Reset line dash
+
+    // 3. Draw difference measurement in center
+    const midX = (primaryBoxX + boxWidth + premolarBoxX) / 2;
+    const midY = primaryBoxY + boxHeight / 2;
+    
+    // White background for difference text
+    const diffTextWidth = 80;
+    const diffTextHeight = 30;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(midX - diffTextWidth/2, midY - diffTextHeight/2, diffTextWidth, diffTextHeight);
+    ctx.strokeStyle = '#ef4444';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(midX - diffTextWidth/2, midY - diffTextHeight/2, diffTextWidth, diffTextHeight);
+    
+    // Difference text
+    ctx.fillStyle = '#dc2626';
+    ctx.font = 'bold 16px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(`Δ ${widthDiff.value_mm.toFixed(2)}mm`, midX, midY + 6);
+
+    // 4. Draw red circles highlighting the actual teeth (like reference image)
+    ctx.strokeStyle = '#ef4444';
+    ctx.lineWidth = 3;
     ctx.setLineDash([]);
 
-    // Add width difference label in the middle
-    const midX = (molarCenter.x + premolarCenter.x) / 2;
-    const midY = (molarCenter.y + premolarCenter.y) / 2;
+    // Circle around primary molar
+    const molarRadius = 35;
+    ctx.beginPath();
+    ctx.arc(primaryMolarX, primaryMolarY, molarRadius, 0, 2 * Math.PI);
+    ctx.stroke();
+
+    // Circle around premolar
+    const premolarRadius = 30;
+    ctx.beginPath();
+    ctx.arc(premolarX, premolarY, premolarRadius, 0, 2 * Math.PI);
+    ctx.stroke();
+
+    // 5. Draw labels with arrows pointing to teeth
+    // Primary molar label
+    const primaryLabelX = primaryMolarX - 60;
+    const primaryLabelY = primaryMolarY + 80;
     
-    const widthDiff = toothWidthAnalysis.width_difference;
+    // Label background
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+    ctx.fillRect(primaryLabelX - 10, primaryLabelY - 25, 120, 35);
     
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(midX - 60, midY - 15, 120, 30);
+    // Label text
     ctx.fillStyle = '#dc2626';
-    ctx.font = 'bold 14px system-ui';
-    ctx.fillText(
-      `Δ ${widthDiff.value_mm.toFixed(2)}mm`,
-      midX - 50,
-      midY + 5
-    );
+    ctx.font = 'bold 16px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText('Primary molar', primaryLabelX, primaryLabelY - 5);
+    
+    // Arrow pointing to primary molar
+    ctx.strokeStyle = '#ef4444';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(primaryLabelX + 50, primaryLabelY - 15);
+    ctx.lineTo(primaryMolarX - 20, primaryMolarY + 20);
+    ctx.stroke();
+    
+    // Arrow head
+    ctx.beginPath();
+    ctx.moveTo(primaryMolarX - 20, primaryMolarY + 20);
+    ctx.lineTo(primaryMolarX - 30, primaryMolarY + 15);
+    ctx.moveTo(primaryMolarX - 20, primaryMolarY + 20);
+    ctx.lineTo(primaryMolarX - 25, primaryMolarY + 30);
+    ctx.stroke();
+
+    // Premolar label
+    const premolarLabelX = premolarX - 40;
+    const premolarLabelY = premolarY + 100;
+    
+    // Label background
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+    ctx.fillRect(premolarLabelX - 10, premolarLabelY - 25, 100, 35);
+    
+    // Label text
+    ctx.fillStyle = '#dc2626';
+    ctx.font = 'bold 16px Arial';
+    ctx.fillText('Premolar', premolarLabelX, premolarLabelY - 5);
+    
+    // Arrow pointing to premolar
+    ctx.strokeStyle = '#ef4444';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(premolarLabelX + 30, premolarLabelY - 15);
+    ctx.lineTo(premolarX, premolarY + 25);
+    ctx.stroke();
+    
+    // Arrow head
+    ctx.beginPath();
+    ctx.moveTo(premolarX, premolarY + 25);
+    ctx.lineTo(premolarX - 10, premolarY + 20);
+    ctx.moveTo(premolarX, premolarY + 25);
+    ctx.lineTo(premolarX + 5, premolarY + 35);
+    ctx.stroke();
+
+    // Reset text alignment
+    ctx.textAlign = 'start';
   };
 
   return (
@@ -166,7 +237,7 @@ export function AnnotatedImage({ imageFile, imageUrl, analysisData }: AnnotatedI
       <CardHeader className="pb-4">
         <CardTitle className="flex items-center gap-2 text-lg">
           <Eye className="h-5 w-5 text-primary" />
-          Annotated Analysis
+          Professional Dental Analysis
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -188,7 +259,11 @@ export function AnnotatedImage({ imageFile, imageUrl, analysisData }: AnnotatedI
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-1 bg-red-500 rounded"></div>
-            <span>Width Difference</span>
+            <span>Width Difference Measurement</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 border-2 border-red-500 rounded-full"></div>
+            <span>Identified Teeth</span>
           </div>
         </div>
       </CardContent>
