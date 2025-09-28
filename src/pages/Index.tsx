@@ -17,46 +17,36 @@ const Index = () => {
   const [processingStep, setProcessingStep] = useState(1);
   const [results, setResults] = useState<any>(null);
 
-  // Mock results data (fallback) - Updated to match new structure
+  // Mock results data (fallback) - Reverted to original structure
   const mockResults = {
-    tooth_measurement_analysis: {
-      second_permanent_tooth: {
-        mesiodistal_width_mm: 8.5,
-        eruption_stage: 'Crown Complete',
-        detection_confidence: 0.89,
-        coordinates: { x: 200, y: 180, width: 50, height: 65 },
-        eruption_tips_detected: true
+    tooth_width_analysis: {
+      primary_second_molar: { 
+        width_mm: 10.2, 
+        confidence: 0.89,
+        coordinates: { x: 150, y: 180, width: 50, height: 70 }
       },
-      space_analysis: {
-        available_space_mm: 7.2,
-        required_space_mm: 8.5,
-        space_adequacy: 'Insufficient',
-        e_space_quantification: -1.3
+      second_premolar: { 
+        width_mm: 8.1, 
+        confidence: 0.92,
+        coordinates: { x: 320, y: 200, width: 40, height: 60 }
       },
-      measurement_calibration: {
-        scale_factor: 0.095,
-        calibration_confidence: 0.92,
-        pixel_to_mm_ratio: 10.53
+      width_difference: { 
+        value_mm: 2.1, 
+        percentage: 25.9, 
+        clinical_significance: "Significant width discrepancy detected" 
       }
     },
-    image_analysis: {
+    image_quality: {
       resolution: "1024x768",
-      quality_score: 0.85,
-      xray_type: 'Panoramic',
-      anatomical_landmarks_detected: ['Mandibular Canal', 'Mental Foramen', 'Crown Outline']
+      brightness: 0.7,
+      contrast: 0.8,
+      sharpness: 0.85
     },
-    clinical_insights: {
-      treatment_recommendations: [
-        "Space maintainer placement recommended",
-        "Monitor eruption pattern closely", 
-        "Consider early orthodontic intervention"
-      ],
-      orthodontic_planning_notes: [
-        "E-space quantification indicates crowding risk",
-        "Consider extraction or expansion options"
-      ],
-      eruption_timeline_prediction: "Delayed eruption likely due to space constraints"
-    },
+    clinical_recommendations: [
+      "Consider space maintainer placement",
+      "Monitor eruption pattern closely", 
+      "Orthodontic consultation recommended"
+    ],
     processing_time_ms: 1250
   };
 

@@ -6,37 +6,30 @@ import { AnnotatedImage } from './AnnotatedImage';
 import ChatBot from './ChatBot';
 
 interface AnalysisData {
-  tooth_measurement_analysis: {
-    second_permanent_tooth: {
-      mesiodistal_width_mm: number;
-      eruption_stage: string;
-      detection_confidence: number;
+  tooth_width_analysis: {
+    primary_second_molar: {
+      width_mm: number;
+      confidence: number;
       coordinates: { x: number; y: number; width: number; height: number };
-      eruption_tips_detected: boolean;
     };
-    space_analysis: {
-      available_space_mm: number;
-      required_space_mm: number;
-      space_adequacy: string;
-      e_space_quantification: number;
+    second_premolar: {
+      width_mm: number;
+      confidence: number;
+      coordinates: { x: number; y: number; width: number; height: number };
     };
-    measurement_calibration: {
-      scale_factor: number;
-      calibration_confidence: number;
-      pixel_to_mm_ratio: number;
+    width_difference: {
+      value_mm: number;
+      percentage: number;
+      clinical_significance: string;
     };
   };
-  image_analysis: {
+  image_quality: {
     resolution: string;
-    quality_score: number;
-    xray_type: string;
-    anatomical_landmarks_detected: string[];
+    brightness: number;
+    contrast: number;
+    sharpness: number;
   };
-  clinical_insights: {
-    treatment_recommendations: string[];
-    orthodontic_planning_notes: string[];
-    eruption_timeline_prediction: string;
-  };
+  clinical_recommendations: string[];
   processing_time_ms: number;
 }
 
@@ -80,22 +73,25 @@ export function AnalysisResults({ data, imageFile, imageUrl }: AnalysisResultsPr
     }
   };
 
-  // Determine status based on space adequacy with safe access
-  const getStatus = (spaceAdequacy: string) => {
-    if (spaceAdequacy === 'Insufficient') return 'concern';
+  // Determine status based on width difference percentage
+  const getStatus = (percentage: number) => {
+    if (percentage > 20) return 'concern';
+    if (percentage > 10) return 'attention';
     return 'normal';
   };
 
   // Safely access the data with fallbacks
-  const spaceAnalysis = data?.tooth_measurement_analysis?.space_analysis;
-  const secondPermTooth = data?.tooth_measurement_analysis?.second_permanent_tooth;
+  const toothWidthAnalysis = data?.tooth_width_analysis;
+  const primaryMolar = toothWidthAnalysis?.primary_second_molar;
+  const premolar = toothWidthAnalysis?.second_premolar;
+  const widthDifference = toothWidthAnalysis?.width_difference;
   
-  const status = getStatus(spaceAnalysis?.space_adequacy || 'normal');
+  const status = getStatus(Math.abs(widthDifference?.percentage || 0));
   const statusConfig = getStatusConfig(status);
   const StatusIcon = statusConfig.icon;
   
-  // Use detection confidence with fallback
-  const detectionConfidence = (secondPermTooth?.detection_confidence || 0.85) * 100;
+  // Calculate average confidence
+  const averageConfidence = ((primaryMolar?.confidence || 0.85) + (premolar?.confidence || 0.85)) / 2 * 100;
 
   return (
     <div className="space-y-6">
@@ -116,10 +112,10 @@ export function AnalysisResults({ data, imageFile, imageUrl }: AnalysisResultsPr
           <p className="text-muted-foreground">{statusConfig.description}</p>
           <div className="mt-4">
             <div className="flex justify-between text-sm mb-2">
-              <span>Detection Confidence</span>
-              <span className="font-medium">{detectionConfidence.toFixed(1)}%</span>
+              <span>Confidence Score</span>
+              <span className="font-medium">{averageConfidence.toFixed(1)}%</span>
             </div>
-            <Progress value={detectionConfidence} className="h-2" />
+            <Progress value={averageConfidence} className="h-2" />
           </div>
         </CardContent>
       </Card>
@@ -130,33 +126,27 @@ export function AnalysisResults({ data, imageFile, imageUrl }: AnalysisResultsPr
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-2 text-lg">
               <Ruler className="h-5 w-5 text-primary" />
-              Tooth Measurements
+              Measurements
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex justify-between items-center p-3 bg-gradient-surface rounded-lg">
-              <span className="text-sm font-medium">Mesiodistal Width</span>
+              <span className="text-sm font-medium">Primary Second Molar</span>
               <span className="text-lg font-bold text-primary">
-                {secondPermTooth?.mesiodistal_width_mm?.toFixed(2) || 'N/A'}mm
+                {primaryMolar?.width_mm?.toFixed(2) || 'N/A'}mm
               </span>
             </div>
             <div className="flex justify-between items-center p-3 bg-gradient-surface rounded-lg">
-              <span className="text-sm font-medium">Eruption Stage</span>
-              <span className="text-sm font-medium text-foreground">
-                {secondPermTooth?.eruption_stage || 'Unknown'}
-              </span>
-            </div>
-            <div className="flex justify-between items-center p-3 bg-gradient-surface rounded-lg">
-              <span className="text-sm font-medium">Available Space</span>
+              <span className="text-sm font-medium">Second Premolar</span>
               <span className="text-lg font-bold text-primary">
-                {spaceAnalysis?.available_space_mm?.toFixed(2) || 'N/A'}mm
+                {premolar?.width_mm?.toFixed(2) || 'N/A'}mm
               </span>
             </div>
             <div className="flex justify-between items-center p-3 bg-primary-light rounded-lg border-l-4 border-l-primary">
-              <span className="text-sm font-medium">E-Space Quantification</span>
+              <span className="text-sm font-medium">Width Difference</span>
               <span className="text-lg font-bold text-primary-dark">
-                {spaceAnalysis?.e_space_quantification ? 
-                  `${spaceAnalysis.e_space_quantification > 0 ? '+' : ''}${spaceAnalysis.e_space_quantification.toFixed(2)}mm` 
+                {widthDifference ? 
+                  `${widthDifference.value_mm > 0 ? '+' : ''}${widthDifference.value_mm.toFixed(2)}mm (${widthDifference.percentage > 0 ? '+' : ''}${widthDifference.percentage.toFixed(1)}%)` 
                   : 'N/A'}
               </span>
             </div>
@@ -172,7 +162,7 @@ export function AnalysisResults({ data, imageFile, imageUrl }: AnalysisResultsPr
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {(data?.clinical_insights?.treatment_recommendations || []).map((recommendation, index) => (
+              {(data?.clinical_recommendations || []).map((recommendation, index) => (
                 <div key={index} className="flex items-start gap-3 p-3 bg-accent rounded-lg">
                   <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0" />
                   <p className="text-sm text-foreground">{recommendation}</p>
@@ -181,13 +171,7 @@ export function AnalysisResults({ data, imageFile, imageUrl }: AnalysisResultsPr
               
               <div className="mt-4 p-3 bg-info/10 border border-info/20 rounded-lg">
                 <p className="text-sm text-foreground">
-                  <strong>Space Adequacy:</strong> {spaceAnalysis?.space_adequacy || 'Unknown'}
-                </p>
-              </div>
-              
-              <div className="mt-2 p-3 bg-accent/50 rounded-lg">
-                <p className="text-sm text-foreground">
-                  <strong>Eruption Timeline:</strong> {data?.clinical_insights?.eruption_timeline_prediction || 'Analysis pending'}
+                  <strong>Clinical Significance:</strong> {widthDifference?.clinical_significance || 'Analysis pending'}
                 </p>
               </div>
             </div>
