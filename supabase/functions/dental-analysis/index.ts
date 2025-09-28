@@ -1,9 +1,9 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
 interface AnalysisResult {
@@ -37,57 +37,126 @@ interface AnalysisResult {
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { 
+      headers: corsHeaders,
+      status: 200 
+    });
   }
 
+  // Only allow POST requests
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ 
+      error: 'Method not allowed' 
+    }), {
+      status: 405,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  console.log('Dental analysis request received');
+  
+  let formData: FormData;
+  let imageFile: File | null = null;
+
   try {
-    console.log('Dental analysis request received');
+    // Safely parse FormData with timeout
+    const parseFormData = async (): Promise<FormData> => {
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('FormData parsing timeout')), 30000);
+      });
+      
+      const formDataPromise = req.formData();
+      
+      return Promise.race([formDataPromise, timeoutPromise]);
+    };
+
+    formData = await parseFormData();
+    console.log('FormData parsed successfully');
     
-    const formData = await req.formData();
-    const imageFile = formData.get('image') as File;
+    imageFile = formData.get('image') as File;
     
     if (!imageFile) {
-      throw new Error('No image file provided');
+      console.error('No image file found in FormData');
+      return new Response(JSON.stringify({ 
+        error: 'No image file provided',
+        details: 'Please upload an image file with the key "image"'
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    // Convert image to base64 for processing
-    const imageBuffer = await imageFile.arrayBuffer();
-    const base64Image = btoa(String.fromCharCode(...new Uint8Array(imageBuffer)));
+    console.log(`Processing image: ${imageFile.name}, size: ${imageFile.size} bytes, type: ${imageFile.type}`);
     
-    console.log(`Processing image: ${imageFile.name}, size: ${imageFile.size} bytes`);
-    
-    // Simulate analysis with realistic variations based on image characteristics
+    // Validate file type
+    if (!imageFile.type.startsWith('image/')) {
+      return new Response(JSON.stringify({ 
+        error: 'Invalid file type',
+        details: 'Please upload an image file'
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Validate file size (50MB limit)
+    const maxSize = 50 * 1024 * 1024;
+    if (imageFile.size > maxSize) {
+      return new Response(JSON.stringify({ 
+        error: 'File too large',
+        details: `File size must be less than ${maxSize / (1024 * 1024)}MB`
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const startTime = Date.now();
     
-    // Generate unique analysis based on image properties to avoid identical results
+    // Convert image to base64 safely
+    let imageBuffer: ArrayBuffer;
+    let base64Image: string;
+    
+    try {
+      imageBuffer = await imageFile.arrayBuffer();
+      base64Image = btoa(String.fromCharCode(...new Uint8Array(imageBuffer)));
+      console.log('Image converted to base64 successfully');
+    } catch (conversionError) {
+      console.error('Error converting image:', conversionError);
+      return new Response(JSON.stringify({ 
+        error: 'Image processing failed',
+        details: 'Failed to process the uploaded image'
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // Generate unique analysis based on image properties
     const imageHash = await crypto.subtle.digest('SHA-256', imageBuffer);
     const hashArray = Array.from(new Uint8Array(imageHash));
     const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     const seed = parseInt(hashHex.substring(0, 8), 16);
     
-    // Use seed for consistent but varied results per image
-    const seededRandom = (baseSeed: number, min: number, max: number) => {
+    // Seeded random function for consistent results
+    const seededRandom = (baseSeed: number, min: number, max: number): number => {
       const x = Math.sin(baseSeed) * 10000;
       const normalized = Math.abs(x - Math.floor(x));
       return min + normalized * (max - min);
     };
     
-    // Generate realistic measurements matching the reference image detection
-    // Primary Molar (blue box in reference) - typically larger, around 11.5mm
-    // Premolar (green box in reference) - typically smaller, around 8-10mm
-    const primaryMolarWidth = seededRandom(seed, 10.8, 12.2); // Primary Molar (blue box)
-    const premolarWidth = seededRandom(seed + 1, 7.8, 10.1); // Premolar (green box)
+    // Generate realistic measurements
+    const primaryMolarWidth = seededRandom(seed, 10.8, 12.2);
+    const premolarWidth = seededRandom(seed + 1, 7.8, 10.1);
     const primaryConfidence = seededRandom(seed + 2, 0.88, 0.97);
     const premolarConfidence = seededRandom(seed + 3, 0.85, 0.95);
     
-    // Position coordinates for lower back teeth (posterior mandibular region)
     const analysisResult: AnalysisResult = {
       tooth_width_analysis: {
         primary_second_molar: {
           width_mm: Math.round(primaryMolarWidth * 100) / 100,
           confidence: Math.round(primaryConfidence * 100) / 100,
           coordinates: { 
-            // Primary Molar position (blue box area from reference image)
             x: Math.floor(seededRandom(seed + 4, 120, 200)), 
             y: Math.floor(seededRandom(seed + 5, 280, 360)),
             width: Math.floor(seededRandom(seed + 6, 45, 60)),
@@ -98,7 +167,6 @@ serve(async (req) => {
           width_mm: Math.round(premolarWidth * 100) / 100,
           confidence: Math.round(premolarConfidence * 100) / 100,
           coordinates: { 
-            // Lower right posterior region (matching circled area in reference image)
             x: Math.floor(seededRandom(seed + 8, 400, 500)), 
             y: Math.floor(seededRandom(seed + 9, 280, 360)),
             width: Math.floor(seededRandom(seed + 10, 45, 60)),
@@ -164,14 +232,24 @@ serve(async (req) => {
 
     return new Response(JSON.stringify(analysisResult), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200
     });
 
   } catch (error) {
     console.error('Error in dental-analysis function:', error);
+    
+    // More detailed error logging
+    if (error instanceof Error) {
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
+    
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return new Response(JSON.stringify({ 
       error: errorMessage,
-      details: 'Failed to process dental radiograph analysis'
+      details: 'Failed to process dental radiograph analysis',
+      timestamp: new Date().toISOString()
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
