@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { FileUpload } from '@/components/FileUpload';
 import { ProcessingView } from '@/components/ProcessingView';
 import { AnalysisResults } from '@/components/AnalysisResults';
+import { BatchResults } from '@/components/BatchResults';
 import { SampleImages } from '@/components/SampleImages';
 
 type ViewState = 'upload' | 'processing' | 'results';
@@ -50,36 +51,54 @@ const Index = () => {
   };
 
   const handleFileSelect = async (files: File[], dataUrls: string[]) => {
-    // For now, process the first file only
-    const file = files[0];
-    const dataUrl = dataUrls[0];
-    
-    setSelectedFile(file);
-    setSelectedImageUrl(dataUrl);
+    setSelectedFile(files[0]); // Keep first file for single display
+    setSelectedImageUrl(dataUrls[0]);
     setCurrentView('processing');
     setProcessingStep(1);
     
     try {
-      // Call the dental analysis edge function
-      const formData = new FormData();
-      formData.append('image', file);
-      
-      setProcessingStep(2);
-      
-      const response = await supabase.functions.invoke('dental-analysis', {
-        body: formData,
-      });
-      
-      setProcessingStep(3);
-      
-      if (response.error) {
-        throw new Error(response.error.message);
+      if (files.length === 1) {
+        // Single file analysis - use existing endpoint
+        const formData = new FormData();
+        formData.append('image', files[0]);
+        
+        setProcessingStep(2);
+        
+        const response = await supabase.functions.invoke('dental-analysis', {
+          body: formData,
+        });
+        
+        setProcessingStep(3);
+        
+        if (response.error) {
+          throw new Error(response.error.message);
+        }
+        
+        setProcessingStep(4);
+        setResults(response.data);
+        
+      } else {
+        // Batch analysis - use batch endpoint
+        const formData = new FormData();
+        files.forEach((file, index) => {
+          formData.append(`image${index}`, file);
+        });
+        
+        setProcessingStep(2);
+        
+        const response = await supabase.functions.invoke('dental-batch-analysis', {
+          body: formData,
+        });
+        
+        setProcessingStep(3);
+        
+        if (response.error) {
+          throw new Error(response.error.message);
+        }
+        
+        setProcessingStep(4);
+        setResults(response.data);
       }
-      
-      setProcessingStep(4);
-      
-      // Update results with real data
-      setResults(response.data);
       
       setTimeout(() => setCurrentView('results'), 1000);
       
@@ -90,7 +109,32 @@ const Index = () => {
       setTimeout(() => setProcessingStep(3), 3000);
       setTimeout(() => {
         setProcessingStep(4);
-        setResults(mockResults);
+        
+        if (files.length === 1) {
+          setResults(mockResults);
+        } else {
+          // Mock batch results
+          const batchMockResults = {
+            total_files: files.length,
+            processed_files: files.length,
+            failed_files: 0,
+            total_processing_time_ms: 3500,
+            results: files.map((file, index) => ({
+              fileName: file.name,
+              fileSize: file.size,
+              ...mockResults,
+              processing_time_ms: 800 + Math.random() * 400
+            })),
+            summary: {
+              average_width_difference: 18.5,
+              significant_cases: Math.floor(files.length * 0.3),
+              moderate_cases: Math.floor(files.length * 0.4),
+              normal_cases: Math.floor(files.length * 0.3)
+            }
+          };
+          setResults(batchMockResults);
+        }
+        
         setTimeout(() => setCurrentView('results'), 1000);
       }, 4500);
     }
@@ -185,21 +229,28 @@ const Index = () => {
         )}
 
         {currentView === 'results' && (
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-6xl mx-auto">
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-foreground mb-4">
                 Analysis Results
               </h2>
               <p className="text-lg text-muted-foreground">
-                Detailed measurements and clinical insights for your dental radiograph
+                {results?.total_files ? 
+                  `Batch analysis completed for ${results.total_files} dental radiographs` :
+                  'Detailed measurements and clinical insights for your dental radiograph'
+                }
               </p>
             </div>
             
-            <AnalysisResults 
-              data={results || mockResults} 
-              imageFile={selectedFile}
-              imageUrl={selectedImageUrl}
-            />
+            {results?.total_files ? (
+              <BatchResults data={results} />
+            ) : (
+              <AnalysisResults 
+                data={results || mockResults} 
+                imageFile={selectedFile}
+                imageUrl={selectedImageUrl}
+              />
+            )}
           </div>
         )}
       </main>
