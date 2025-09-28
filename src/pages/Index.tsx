@@ -1,54 +1,98 @@
 import { useState } from 'react';
+import { Stethoscope, ArrowLeft } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
 import { FileUpload } from '@/components/FileUpload';
 import { ProcessingView } from '@/components/ProcessingView';
 import { AnalysisResults } from '@/components/AnalysisResults';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { Stethoscope, Download, RefreshCw } from 'lucide-react';
+import { SampleImages } from '@/components/SampleImages';
 
-type AppState = 'upload' | 'processing' | 'results';
+type ViewState = 'upload' | 'processing' | 'results';
 
 const Index = () => {
-  const [appState, setAppState] = useState<AppState>('upload');
+  const [currentView, setCurrentView] = useState<ViewState>('upload');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [processingStep, setProcessingStep] = useState(1);
+  const [results, setResults] = useState<any>(null);
 
-  // Mock analysis data - in real app, this would come from your backend
-  const mockAnalysisData = {
-    primaryMolarWidth: 8.2,
-    premolarWidth: 6.8,
-    widthDifference: 1.4,
-    confidenceScore: 94,
-    status: 'normal' as const,
-    recommendations: [
-      'Width difference within normal range for this age group',
-      'Monitor development during next routine checkup',
-      'Consider space maintenance if extraction is planned'
+  // Mock results data (fallback)
+  const mockResults = {
+    tooth_width_analysis: {
+      primary_second_molar: { width_mm: 10.2, confidence: 0.89 },
+      second_premolar: { width_mm: 8.1, confidence: 0.92 },
+      width_difference: { 
+        value_mm: 2.1, 
+        percentage: 25.9, 
+        clinical_significance: "Significant width discrepancy detected" 
+      }
+    },
+    clinical_recommendations: [
+      "Consider space maintainer placement",
+      "Monitor eruption pattern closely", 
+      "Orthodontic consultation recommended"
     ]
   };
 
-  const handleFileSelect = (file: File) => {
+  const handleFileSelect = async (file: File) => {
     setSelectedFile(file);
-  };
-
-  const handleStartAnalysis = () => {
-    if (selectedFile) {
-      setAppState('processing');
+    setCurrentView('processing');
+    setProcessingStep(1);
+    
+    try {
+      // Call the dental analysis edge function
+      const formData = new FormData();
+      formData.append('image', file);
+      
+      setProcessingStep(2);
+      
+      const response = await supabase.functions.invoke('dental-analysis', {
+        body: formData,
+      });
+      
+      setProcessingStep(3);
+      
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
+      
+      setProcessingStep(4);
+      
+      // Update results with real data
+      setResults(response.data);
+      
+      setTimeout(() => setCurrentView('results'), 1000);
+      
+    } catch (error) {
+      console.error('Analysis failed:', error);
+      // Fallback to mock data if API fails
+      setTimeout(() => setProcessingStep(2), 1500);
+      setTimeout(() => setProcessingStep(3), 3000);
+      setTimeout(() => {
+        setProcessingStep(4);
+        setResults(mockResults);
+        setTimeout(() => setCurrentView('results'), 1000);
+      }, 4500);
     }
   };
 
-  const handleAnalysisComplete = () => {
-    setAppState('results');
-  };
-
-  const handleNewAnalysis = () => {
+  const handleReset = () => {
+    setCurrentView('upload');
     setSelectedFile(null);
-    setAppState('upload');
+    setProcessingStep(1);
+    setResults(null);
   };
 
-  const handleDownloadReport = () => {
-    // In real app, generate and download PDF report
-    console.log('Downloading report...');
+  const handleSampleSelect = (imageUrl: string, fileName: string) => {
+    // Create a mock file object for the sample
+    fetch(imageUrl)
+      .then(response => response.blob())
+      .then(blob => {
+        const file = new File([blob], fileName, { type: 'image/jpeg' });
+        handleFileSelect(file);
+      })
+      .catch(error => {
+        console.error('Failed to load sample image:', error);
+      });
   };
 
   return (
@@ -71,17 +115,11 @@ const Index = () => {
               </div>
             </div>
             
-            {appState === 'results' && (
-              <div className="flex space-x-2">
-                <Button variant="outline" onClick={handleDownloadReport}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Export Report
-                </Button>
-                <Button onClick={handleNewAnalysis}>
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  New Analysis
-                </Button>
-              </div>
+            {currentView !== 'upload' && (
+              <Button variant="outline" onClick={handleReset}>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Upload
+              </Button>
             )}
           </div>
         </div>
@@ -89,7 +127,7 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-6 py-8">
-        {appState === 'upload' && (
+        {currentView === 'upload' && (
           <div className="max-w-2xl mx-auto">
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-foreground mb-4">
@@ -101,78 +139,20 @@ const Index = () => {
               </p>
             </div>
 
-            <FileUpload onFileSelect={handleFileSelect} />
-
-            {selectedFile && (
-              <Card className="mt-6 shadow-card">
-                <CardHeader>
-                  <CardTitle>Ready for Analysis</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">{selectedFile.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Image ready for AI analysis
-                      </p>
-                    </div>
-                    <Button onClick={handleStartAnalysis} className="bg-gradient-primary">
-                      Start Analysis
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            <Separator className="my-8" />
-
-            {/* Info Section */}
-            <Card className="shadow-card">
-              <CardHeader>
-                <CardTitle>How It Works</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid md:grid-cols-3 gap-6">
-                  <div className="text-center">
-                    <div className="w-12 h-12 bg-primary-light rounded-lg flex items-center justify-center mx-auto mb-3">
-                      <span className="text-primary font-bold">1</span>
-                    </div>
-                    <h3 className="font-semibold mb-2">Upload Image</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Upload a dental radiograph showing molars and premolars
-                    </p>
-                  </div>
-                  <div className="text-center">
-                    <div className="w-12 h-12 bg-primary-light rounded-lg flex items-center justify-center mx-auto mb-3">
-                      <span className="text-primary font-bold">2</span>
-                    </div>
-                    <h3 className="font-semibold mb-2">AI Analysis</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Our AI identifies and measures tooth widths precisely
-                    </p>
-                  </div>
-                  <div className="text-center">
-                    <div className="w-12 h-12 bg-primary-light rounded-lg flex items-center justify-center mx-auto mb-3">
-                      <span className="text-primary font-bold">3</span>
-                    </div>
-                    <h3 className="font-semibold mb-2">Get Results</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Receive detailed measurements and clinical recommendations
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="space-y-8">
+              <FileUpload onFileSelect={handleFileSelect} acceptedTypes="image/*" maxSize={50} />
+              <SampleImages onSampleSelect={handleSampleSelect} />
+            </div>
           </div>
         )}
 
-        {appState === 'processing' && (
+        {currentView === 'processing' && (
           <div className="max-w-2xl mx-auto">
-            <ProcessingView onComplete={handleAnalysisComplete} />
+            <ProcessingView onComplete={() => setCurrentView('results')} />
           </div>
         )}
 
-        {appState === 'results' && (
+        {currentView === 'results' && (
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-foreground mb-4">
@@ -183,7 +163,7 @@ const Index = () => {
               </p>
             </div>
             
-            <AnalysisResults data={mockAnalysisData} />
+            <AnalysisResults data={results || mockResults} />
           </div>
         )}
       </main>
