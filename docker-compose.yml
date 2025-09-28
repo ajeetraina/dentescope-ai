@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  dental-app:
+    build: .
+    container_name: dental-width-predictor
+    ports:
+      - "3000:80"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    networks:
+      - dental-network
+
+  # Optional: Python model service (if needed for local inference)
+  model-service:
+    build:
+      context: ./model
+      dockerfile: Dockerfile
+    container_name: dental-model-service
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+    restart: unless-stopped
+    networks:
+      - dental-network
+    profiles:
+      - with-model
+
+networks:
+  dental-network:
+    driver: bridge
+
+volumes:
+  model-data:
+    driver: local
