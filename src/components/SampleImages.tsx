@@ -130,13 +130,6 @@ export function SampleImages({ onSampleSelect }: SampleImagesProps) {
             </div>
           </div>
         ))}
-        
-        <div className="mt-6 p-4 bg-info/10 border border-info/20 rounded-lg">
-          <p className="text-sm text-foreground">
-            <strong>Note:</strong> These sample images are from the original dental-width-predictor repository 
-            and represent different types of dental conditions for testing the analysis algorithm.
-          </p>
-        </div>
       </CardContent>
     </Card>
   );
