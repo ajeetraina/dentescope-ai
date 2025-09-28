@@ -12,6 +12,7 @@ type ViewState = 'upload' | 'processing' | 'results';
 const Index = () => {
   const [currentView, setCurrentView] = useState<ViewState>('upload');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
   const [processingStep, setProcessingStep] = useState(1);
   const [results, setResults] = useState<any>(null);
 
@@ -78,11 +79,13 @@ const Index = () => {
   const handleReset = () => {
     setCurrentView('upload');
     setSelectedFile(null);
+    setSelectedImageUrl(null);
     setProcessingStep(1);
     setResults(null);
   };
 
   const handleSampleSelect = (imageUrl: string, fileName: string) => {
+    setSelectedImageUrl(imageUrl);
     // Create a mock file object for the sample
     fetch(imageUrl)
       .then(response => response.blob())
@@ -163,7 +166,11 @@ const Index = () => {
               </p>
             </div>
             
-            <AnalysisResults data={results || mockResults} />
+            <AnalysisResults 
+              data={results || mockResults} 
+              imageFile={selectedFile}
+              imageUrl={selectedImageUrl}
+            />
           </div>
         )}
       </main>

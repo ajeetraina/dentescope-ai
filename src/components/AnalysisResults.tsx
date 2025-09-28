@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Ruler, TrendingUp, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { AnnotatedImage } from './AnnotatedImage';
 
 interface AnalysisData {
   tooth_width_analysis: {
@@ -33,9 +34,11 @@ interface AnalysisData {
 
 interface AnalysisResultsProps {
   data: AnalysisData;
+  imageFile?: File | null;
+  imageUrl?: string;
 }
 
-export function AnalysisResults({ data }: AnalysisResultsProps) {
+export function AnalysisResults({ data, imageFile, imageUrl }: AnalysisResultsProps) {
   const getStatusConfig = (status: string) => {
     switch (status) {
       case 'normal':
@@ -172,6 +175,15 @@ export function AnalysisResults({ data }: AnalysisResultsProps) {
           </CardContent>
         </Card>
       </div>
+
+      {/* Annotated Image */}
+      {(imageFile || imageUrl) && (
+        <AnnotatedImage 
+          imageFile={imageFile} 
+          imageUrl={imageUrl}
+          analysisData={data} 
+        />
+      )}
     </div>
   );
 }
