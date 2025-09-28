@@ -27,6 +27,48 @@ const sampleImages = [
     description: "7-year-old female patient for bilateral measurement comparison",
     url: "/sample-images/sample3.jpg",
     fileName: "sample3.jpg"
+  },
+  {
+    id: 4,
+    name: "Aarush - 7 Years Male",
+    description: "7-year-old male patient dental radiograph from clinical dataset",
+    url: "/sample-images/aarush_7yrs_male.jpg",
+    fileName: "aarush_7yrs_male.jpg"
+  },
+  {
+    id: 5,
+    name: "Afiya - 8 Years Female",
+    description: "8-year-old female patient dental radiograph from clinical dataset",
+    url: "/sample-images/afiya_8yrs_female.jpg",
+    fileName: "afiya_8yrs_female.jpg"
+  },
+  {
+    id: 6,
+    name: "Aksa - 7 Years Female",
+    description: "7-year-old female patient dental radiograph from clinical dataset",
+    url: "/sample-images/aksa_7yrs_female.jpg",
+    fileName: "aksa_7yrs_female.jpg"
+  },
+  {
+    id: 7,
+    name: "Amirul - 8 Years Male",
+    description: "8-year-old male patient dental radiograph from clinical dataset",
+    url: "/sample-images/amirul_8yrs_male.jpg",
+    fileName: "amirul_8yrs_male.jpg"
+  },
+  {
+    id: 8,
+    name: "Divisha - 6 Years Female",
+    description: "6-year-old female patient dental radiograph from clinical dataset",
+    url: "/sample-images/divisha_6yrs_female.jpg",
+    fileName: "divisha_6yrs_female.jpg"
+  },
+  {
+    id: 9,
+    name: "Dushyanth - 8 Years Male",
+    description: "8-year-old male patient dental radiograph from clinical dataset",
+    url: "/sample-images/dushyanth_8yrs_male.jpg",
+    fileName: "dushyanth_8yrs_male.jpg"
   }
 ];
 

@@ -49,8 +49,13 @@ const Index = () => {
     processing_time_ms: 1250
   };
 
-  const handleFileSelect = async (file: File) => {
+  const handleFileSelect = async (files: File[], dataUrls: string[]) => {
+    // For now, process the first file only
+    const file = files[0];
+    const dataUrl = dataUrls[0];
+    
     setSelectedFile(file);
+    setSelectedImageUrl(dataUrl);
     setCurrentView('processing');
     setProcessingStep(1);
     
@@ -106,7 +111,11 @@ const Index = () => {
       .then(response => response.blob())
       .then(blob => {
         const file = new File([blob], fileName, { type: 'image/jpeg' });
-        handleFileSelect(file);
+        const reader = new FileReader();
+        reader.onload = () => {
+          handleFileSelect([file], [reader.result as string]);
+        };
+        reader.readAsDataURL(file);
       })
       .catch(error => {
         console.error('Failed to load sample image:', error);
@@ -158,7 +167,12 @@ const Index = () => {
             </div>
 
             <div className="space-y-8">
-              <FileUpload onFileSelect={handleFileSelect} acceptedTypes="image/*" maxSize={50} />
+              <FileUpload 
+                onFileSelect={handleFileSelect} 
+                acceptedTypes="image/*" 
+                maxSize={50 * 1024 * 1024} 
+                multiple={true}
+              />
               <SampleImages onSampleSelect={handleSampleSelect} />
             </div>
           </div>

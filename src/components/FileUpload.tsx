@@ -1,17 +1,19 @@
 import { useState } from 'react';
-import { Upload, X, CheckCircle } from 'lucide-react';
+import { Upload, X, CheckCircle, FileImage } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
 interface FileUploadProps {
-  onFileSelect: (file: File) => void;
+  onFileSelect: (files: File[], dataUrls: string[]) => void;
   acceptedTypes?: string;
-  maxSize?: number; // in MB
+  maxSize?: number;
+  multiple?: boolean;
 }
 
-export function FileUpload({ onFileSelect, acceptedTypes = 'image/*', maxSize = 10 }: FileUploadProps) {
+export function FileUpload({ onFileSelect, acceptedTypes = "image/*", maxSize = 10 * 1024 * 1024, multiple = false }: FileUploadProps) {
   const [dragActive, setDragActive] = useState(false);
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -27,82 +29,121 @@ export function FileUpload({ onFileSelect, acceptedTypes = 'image/*', maxSize = 
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFileSelection(e.dataTransfer.files[0]);
+
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      handleFileSelection(files);
     }
   };
 
-  const handleFileSelection = (file: File) => {
-    if (file.size > maxSize * 1024 * 1024) {
-      alert(`File size must be less than ${maxSize}MB`);
-      return;
-    }
+  const handleFileSelection = (files: File[]) => {
+    const validFiles = files.filter(file => {
+      if (file.size > maxSize) {
+        alert(`File ${file.name} is too large. Maximum size is ${maxSize / (1024 * 1024)}MB`);
+        return false;
+      }
+      return true;
+    });
+
+    if (validFiles.length === 0) return;
+
+    setUploadedFiles(validFiles);
     
-    setUploadedFile(file);
-    onFileSelect(file);
+    const dataUrls: string[] = [];
+    let loadedCount = 0;
+
+    validFiles.forEach((file, index) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        dataUrls[index] = reader.result as string;
+        loadedCount++;
+        
+        if (loadedCount === validFiles.length) {
+          onFileSelect(validFiles, dataUrls);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
   };
 
-  const removeFile = () => {
-    setUploadedFile(null);
+  const removeFiles = () => {
+    setUploadedFiles([]);
   };
 
   return (
     <Card className="w-full shadow-card">
-      <CardContent className="p-8">
-        {!uploadedFile ? (
+      <CardHeader>
+        <CardTitle>Upload X-ray Image{multiple ? 's' : ''}</CardTitle>
+        <p className="text-sm text-muted-foreground">
+          Upload dental X-ray image{multiple ? 's' : ''} for AI-powered tooth width analysis
+        </p>
+      </CardHeader>
+      <CardContent>
+        {uploadedFiles.length === 0 ? (
           <div
-            className={`
-              relative border-2 border-dashed rounded-lg p-8 text-center transition-all duration-300
-              ${dragActive 
-                ? 'border-primary bg-primary-light' 
-                : 'border-border hover:border-primary/50 hover:bg-accent/30'
-              }
-            `}
+            className={cn(
+              "relative border-2 border-dashed border-border rounded-lg p-6 text-center transition-colors",
+              dragActive && "border-primary bg-primary/5"
+            )}
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}
             onDragOver={handleDrag}
             onDrop={handleDrop}
           >
-            <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              Upload Dental Radiograph
-            </h3>
+            <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-4" />
             <p className="text-sm text-muted-foreground mb-4">
-              Drag and drop your X-ray image here, or click to browse
+              Drag and drop your X-ray image{multiple ? 's' : ''} here, or click to browse
             </p>
             <input
               type="file"
               accept={acceptedTypes}
-              onChange={(e) => e.target.files && handleFileSelection(e.target.files[0])}
+              multiple={multiple}
+              onChange={(e) => {
+                const files = Array.from(e.target.files || []);
+                if (files.length > 0) handleFileSelection(files);
+              }}
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
             />
-            <Button variant="outline" className="pointer-events-none">
-              Select File
+            <Button variant="outline" size="sm">
+              Browse Files
             </Button>
-            <p className="text-xs text-muted-foreground mt-3">
-              Supported formats: JPEG, PNG, DICOM • Max size: {maxSize}MB
+            <p className="text-xs text-muted-foreground mt-2">
+              Maximum file size: {maxSize / (1024 * 1024)}MB{multiple ? ' per file' : ''}
             </p>
           </div>
         ) : (
-          <div className="flex items-center justify-between p-4 bg-success/10 border border-success/20 rounded-lg">
-            <div className="flex items-center space-x-3">
-              <CheckCircle className="h-5 w-5 text-success" />
-              <div>
-                <p className="font-medium text-foreground">{uploadedFile.name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
-                </p>
+          <div className="space-y-2">
+            {uploadedFiles.map((file, index) => (
+              <div key={index} className="flex items-center justify-between p-4 border border-border rounded-lg bg-accent/50">
+                <div className="flex items-center gap-2">
+                  <FileImage className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium">{file.name}</span>
+                  <span className="text-xs text-muted-foreground">
+                    ({(file.size / (1024 * 1024)).toFixed(2)} MB)
+                  </span>
+                </div>
+                {uploadedFiles.length === 1 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={removeFiles}
+                    className="text-muted-foreground hover:text-destructive"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={removeFile}
-              className="text-muted-foreground hover:text-destructive"
-            >
-              <X className="h-4 w-4" />
-            </Button>
+            ))}
+            {uploadedFiles.length > 1 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={removeFiles}
+                className="w-full"
+              >
+                Remove All Files
+              </Button>
+            )}
           </div>
         )}
       </CardContent>
