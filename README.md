@@ -1,73 +1,95 @@
-# Welcome to your Lovable project
+# Dental Width Predictor
 
-## Project info
+A professional AI-powered tool for measuring and predicting tooth width differences between primary second molars and second premolars in dental radiographs.
 
+## Overview
+
+This advanced dental analysis system automates the process of measuring the width difference between primary second molars and underlying second premolars in dental panoramic radiographs. These measurements are essential for orthodontic treatment planning and prediction of tooth development patterns.
+
+## Features
+
+- **AI-Powered Analysis**: Advanced computer vision algorithms for precise tooth detection and measurement
+- **Real-time Processing**: Fast analysis of dental radiographs with immediate results
+- **Clinical Insights**: Automated generation of clinical recommendations based on measurements
+- **Visual Annotations**: Interactive display of measurements overlaid on original X-ray images
+- **Professional Interface**: Modern, user-friendly web application designed for clinical use
+- **Sample Dataset**: Comprehensive collection of dental radiographs for testing and demonstration
+
+## Technology Stack
+
+This project is built with modern web technologies:
+
+- **Frontend**: React + TypeScript + Vite
+- **UI Components**: shadcn-ui + Tailwind CSS
+- **Backend**: Supabase Edge Functions
+- **AI/ML**: Computer vision algorithms with OpenCV
+- **Database**: Supabase PostgreSQL
+- **Deployment**: Lovable Cloud Platform
+
+## Clinical Applications
+
+The system provides valuable insights for:
+- Orthodontic treatment planning
+- Space analysis in mixed dentition
+- Prediction of crowding or spacing issues
+- Early intervention planning
+- Monitoring tooth development patterns
+
+## Getting Started
+
+### Using the Application
+
+1. **Upload X-ray**: Upload a dental panoramic radiograph or select from sample images
+2. **AI Analysis**: The system automatically processes the image and detects teeth
+3. **View Results**: Review measurements, confidence scores, and clinical recommendations
+4. **Annotated Images**: Examine the visual overlay showing detected teeth and measurements
+
+### Sample Dataset
+
+The application includes real dental radiographs from diverse patient cases:
+- Various age groups (6-11 years)
+- Different clinical presentations
+- Normal and abnormal width relationships
+- Multiple patient demographics
+
+## Model Performance
+
+- High accuracy tooth detection and identification
+- Precise width measurements within clinical tolerance
+- Reliable confidence scoring for quality assurance
+- Fast processing times suitable for clinical workflows
+
+## Deployment
+
+The application is deployed on Lovable Cloud Platform and can be accessed at:
 **URL**: https://lovable.dev/projects/cc99f6dd-07fc-4321-bc42-9d0d4b3a2592
 
-## How can I edit this code?
+## Development
 
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/cc99f6dd-07fc-4321-bc42-9d0d4b3a2592) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+To run locally:
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
+# Clone the repository
 git clone <YOUR_GIT_URL>
 
-# Step 2: Navigate to the project directory.
+# Navigate to project directory
 cd <YOUR_PROJECT_NAME>
 
-# Step 3: Install the necessary dependencies.
+# Install dependencies
 npm i
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Contributing
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+This project welcomes contributions for:
+- Algorithm improvements
+- UI/UX enhancements
+- Additional clinical features
+- Performance optimizations
 
-**Use GitHub Codespaces**
+## License
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/cc99f6dd-07fc-4321-bc42-9d0d4b3a2592) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Professional dental analysis tool for orthodontic and pediatric dental applications.
