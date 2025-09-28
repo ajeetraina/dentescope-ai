@@ -63,6 +63,12 @@ export function AnnotatedImage({ imageFile, imageUrl, analysisData }: AnnotatedI
   const drawAnnotations = (ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number) => {
     const { primary_second_molar, second_premolar } = analysisData.tooth_width_analysis;
     
+    // Check if coordinates exist
+    if (!primary_second_molar.coordinates || !second_premolar.coordinates) {
+      console.warn('Coordinates not available for annotation');
+      return;
+    }
+    
     // Scale coordinates to canvas size (assuming coordinates are normalized 0-1)
     const scaleCoords = (coords: { x: number; y: number; width: number; height: number }) => ({
       x: coords.x * canvasWidth,

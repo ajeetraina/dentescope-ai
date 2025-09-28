@@ -19,19 +19,34 @@ const Index = () => {
   // Mock results data (fallback)
   const mockResults = {
     tooth_width_analysis: {
-      primary_second_molar: { width_mm: 10.2, confidence: 0.89 },
-      second_premolar: { width_mm: 8.1, confidence: 0.92 },
+      primary_second_molar: { 
+        width_mm: 10.2, 
+        confidence: 0.89,
+        coordinates: { x: 0.15, y: 0.25, width: 0.08, height: 0.12 }
+      },
+      second_premolar: { 
+        width_mm: 8.1, 
+        confidence: 0.92,
+        coordinates: { x: 0.25, y: 0.35, width: 0.06, height: 0.10 }
+      },
       width_difference: { 
         value_mm: 2.1, 
         percentage: 25.9, 
         clinical_significance: "Significant width discrepancy detected" 
       }
     },
+    image_quality: {
+      resolution: "1024x768",
+      brightness: 0.7,
+      contrast: 0.8,
+      sharpness: 0.85
+    },
     clinical_recommendations: [
       "Consider space maintainer placement",
       "Monitor eruption pattern closely", 
       "Orthodontic consultation recommended"
-    ]
+    ],
+    processing_time_ms: 1250
   };
 
   const handleFileSelect = async (file: File) => {
