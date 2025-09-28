@@ -113,19 +113,30 @@ serve(async (req) => {
 
     const startTime = Date.now();
     
-    // Convert image to base64 safely
+    // Convert image to base64 safely - fix for stack overflow
     let imageBuffer: ArrayBuffer;
     let base64Image: string;
     
     try {
       imageBuffer = await imageFile.arrayBuffer();
-      base64Image = btoa(String.fromCharCode(...new Uint8Array(imageBuffer)));
-      console.log('Image converted to base64 successfully');
+      
+      // Use chunked approach to avoid stack overflow with large images
+      const uint8Array = new Uint8Array(imageBuffer);
+      const chunkSize = 8192; // Process in 8KB chunks
+      let binaryString = '';
+      
+      for (let i = 0; i < uint8Array.length; i += chunkSize) {
+        const chunk = uint8Array.subarray(i, i + chunkSize);
+        binaryString += String.fromCharCode.apply(null, Array.from(chunk));
+      }
+      
+      base64Image = btoa(binaryString);
+      console.log(`Image converted to base64 successfully (${uint8Array.length} bytes)`);
     } catch (conversionError) {
       console.error('Error converting image:', conversionError);
       return new Response(JSON.stringify({ 
         error: 'Image processing failed',
-        details: 'Failed to process the uploaded image'
+        details: 'Failed to process the uploaded image. Please try a smaller image size.'
       }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
