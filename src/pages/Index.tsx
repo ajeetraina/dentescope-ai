@@ -254,6 +254,15 @@ const Index = () => {
           </div>
         )}
       </main>
+
+      {/* Footer */}
+      <footer className="bg-card border-t mt-auto py-4">
+        <div className="container mx-auto px-6 text-center">
+          <p className="text-sm text-muted-foreground">
+            Powered by Docker containers
+          </p>
+        </div>
+      </footer>
     </div>
   );
 };
