@@ -64,10 +64,12 @@ export function AnnotatedImage({ imageFile, imageUrl, analysisData }: AnnotatedI
   }, [imageFile, imageUrl, analysisData]);
 
   const drawAnnotations = (ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number) => {
-    const { second_permanent_tooth, space_analysis } = analysisData.tooth_measurement_analysis;
+    const measurementAnalysis = analysisData?.tooth_measurement_analysis;
+    const secondPermTooth = measurementAnalysis?.second_permanent_tooth;
+    const spaceAnalysis = measurementAnalysis?.space_analysis;
     
-    // Check if coordinates exist
-    if (!second_permanent_tooth.coordinates) {
+    // Check if required data exists
+    if (!secondPermTooth?.coordinates) {
       console.warn('Coordinates not available for annotation');
       return;
     }
@@ -76,10 +78,10 @@ export function AnnotatedImage({ imageFile, imageUrl, analysisData }: AnnotatedI
     const scaleX = canvasWidth / 800; // Adjust based on typical image width
     const scaleY = canvasHeight / 600; // Adjust based on typical image height
     
-    const toothX = second_permanent_tooth.coordinates.x * scaleX;
-    const toothY = second_permanent_tooth.coordinates.y * scaleY;
-    const toothWidth = second_permanent_tooth.coordinates.width * scaleX;
-    const toothHeight = second_permanent_tooth.coordinates.height * scaleY;
+    const toothX = secondPermTooth.coordinates.x * scaleX;
+    const toothY = secondPermTooth.coordinates.y * scaleY;
+    const toothWidth = secondPermTooth.coordinates.width * scaleX;
+    const toothHeight = secondPermTooth.coordinates.height * scaleY;
 
     // Draw tooth outline
     ctx.strokeStyle = '#3b82f6'; // Blue
@@ -92,7 +94,7 @@ export function AnnotatedImage({ imageFile, imageUrl, analysisData }: AnnotatedI
     ctx.strokeRect(toothX, toothY, toothWidth, toothHeight);
     
     // Draw eruption tips if detected
-    if (second_permanent_tooth.eruption_tips_detected) {
+    if (secondPermTooth.eruption_tips_detected) {
       ctx.strokeStyle = '#10b981'; // Green for eruption tips
       ctx.lineWidth = 2;
       const tipRadius = 6;
@@ -150,7 +152,7 @@ export function AnnotatedImage({ imageFile, imageUrl, analysisData }: AnnotatedI
     );
     ctx.font = '12px system-ui';
     ctx.fillText(
-      `Stage: ${second_permanent_tooth.eruption_stage}`,
+      `Stage: ${secondPermTooth.eruption_stage || 'Unknown'}`,
       toothX + 5,
       toothY - 5
     );
@@ -161,21 +163,25 @@ export function AnnotatedImage({ imageFile, imageUrl, analysisData }: AnnotatedI
     ctx.fillStyle = '#dc2626';
     ctx.font = 'bold 12px system-ui';
     ctx.fillText(
-      `Mesiodistal Width: ${second_permanent_tooth.mesiodistal_width_mm.toFixed(1)}mm`,
+      `Mesiodistal Width: ${secondPermTooth.mesiodistal_width_mm?.toFixed(1) || 'N/A'}mm`,
       toothX + 5,
       toothY + toothHeight + 20
     );
 
     // Space analysis indicator
-    const spaceColor = space_analysis.space_adequacy === 'Adequate' ? '#10b981' : '#ef4444';
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(toothX, toothY + toothHeight + 35, 180, 25);
-    ctx.fillStyle = spaceColor;
-    ctx.fillText(
-      `E-Space: ${space_analysis.e_space_quantification > 0 ? '+' : ''}${space_analysis.e_space_quantification.toFixed(1)}mm`,
-      toothX + 5,
-      toothY + toothHeight + 50
-    );
+    if (spaceAnalysis) {
+      const spaceColor = spaceAnalysis.space_adequacy === 'Adequate' ? '#10b981' : '#ef4444';
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(toothX, toothY + toothHeight + 35, 180, 25);
+      ctx.fillStyle = spaceColor;
+      ctx.fillText(
+        `E-Space: ${spaceAnalysis.e_space_quantification ? 
+          `${spaceAnalysis.e_space_quantification > 0 ? '+' : ''}${spaceAnalysis.e_space_quantification.toFixed(1)}mm` 
+          : 'N/A'}`,
+        toothX + 5,
+        toothY + toothHeight + 50
+      );
+    }
   };
 
   return (

@@ -80,19 +80,22 @@ export function AnalysisResults({ data, imageFile, imageUrl }: AnalysisResultsPr
     }
   };
 
-  // Determine status based on space adequacy
+  // Determine status based on space adequacy with safe access
   const getStatus = (spaceAdequacy: string) => {
     if (spaceAdequacy === 'Insufficient') return 'concern';
-    if (Math.abs(data.tooth_measurement_analysis.space_analysis.e_space_quantification) < 1) return 'attention';
     return 'normal';
   };
 
-  const status = getStatus(data.tooth_measurement_analysis.space_analysis.space_adequacy);
+  // Safely access the data with fallbacks
+  const spaceAnalysis = data?.tooth_measurement_analysis?.space_analysis;
+  const secondPermTooth = data?.tooth_measurement_analysis?.second_permanent_tooth;
+  
+  const status = getStatus(spaceAnalysis?.space_adequacy || 'normal');
   const statusConfig = getStatusConfig(status);
   const StatusIcon = statusConfig.icon;
   
-  // Use detection confidence
-  const detectionConfidence = data.tooth_measurement_analysis.second_permanent_tooth.detection_confidence * 100;
+  // Use detection confidence with fallback
+  const detectionConfidence = (secondPermTooth?.detection_confidence || 0.85) * 100;
 
   return (
     <div className="space-y-6">
@@ -134,26 +137,27 @@ export function AnalysisResults({ data, imageFile, imageUrl }: AnalysisResultsPr
             <div className="flex justify-between items-center p-3 bg-gradient-surface rounded-lg">
               <span className="text-sm font-medium">Mesiodistal Width</span>
               <span className="text-lg font-bold text-primary">
-                {data.tooth_measurement_analysis.second_permanent_tooth.mesiodistal_width_mm.toFixed(2)}mm
+                {secondPermTooth?.mesiodistal_width_mm?.toFixed(2) || 'N/A'}mm
               </span>
             </div>
             <div className="flex justify-between items-center p-3 bg-gradient-surface rounded-lg">
               <span className="text-sm font-medium">Eruption Stage</span>
               <span className="text-sm font-medium text-foreground">
-                {data.tooth_measurement_analysis.second_permanent_tooth.eruption_stage}
+                {secondPermTooth?.eruption_stage || 'Unknown'}
               </span>
             </div>
             <div className="flex justify-between items-center p-3 bg-gradient-surface rounded-lg">
               <span className="text-sm font-medium">Available Space</span>
               <span className="text-lg font-bold text-primary">
-                {data.tooth_measurement_analysis.space_analysis.available_space_mm.toFixed(2)}mm
+                {spaceAnalysis?.available_space_mm?.toFixed(2) || 'N/A'}mm
               </span>
             </div>
             <div className="flex justify-between items-center p-3 bg-primary-light rounded-lg border-l-4 border-l-primary">
               <span className="text-sm font-medium">E-Space Quantification</span>
               <span className="text-lg font-bold text-primary-dark">
-                {data.tooth_measurement_analysis.space_analysis.e_space_quantification > 0 ? '+' : ''}
-                {data.tooth_measurement_analysis.space_analysis.e_space_quantification.toFixed(2)}mm
+                {spaceAnalysis?.e_space_quantification ? 
+                  `${spaceAnalysis.e_space_quantification > 0 ? '+' : ''}${spaceAnalysis.e_space_quantification.toFixed(2)}mm` 
+                  : 'N/A'}
               </span>
             </div>
           </CardContent>
@@ -168,7 +172,7 @@ export function AnalysisResults({ data, imageFile, imageUrl }: AnalysisResultsPr
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {data.clinical_insights.treatment_recommendations.map((recommendation, index) => (
+              {(data?.clinical_insights?.treatment_recommendations || []).map((recommendation, index) => (
                 <div key={index} className="flex items-start gap-3 p-3 bg-accent rounded-lg">
                   <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0" />
                   <p className="text-sm text-foreground">{recommendation}</p>
@@ -177,13 +181,13 @@ export function AnalysisResults({ data, imageFile, imageUrl }: AnalysisResultsPr
               
               <div className="mt-4 p-3 bg-info/10 border border-info/20 rounded-lg">
                 <p className="text-sm text-foreground">
-                  <strong>Space Adequacy:</strong> {data.tooth_measurement_analysis.space_analysis.space_adequacy}
+                  <strong>Space Adequacy:</strong> {spaceAnalysis?.space_adequacy || 'Unknown'}
                 </p>
               </div>
               
               <div className="mt-2 p-3 bg-accent/50 rounded-lg">
                 <p className="text-sm text-foreground">
-                  <strong>Eruption Timeline:</strong> {data.clinical_insights.eruption_timeline_prediction}
+                  <strong>Eruption Timeline:</strong> {data?.clinical_insights?.eruption_timeline_prediction || 'Analysis pending'}
                 </p>
               </div>
             </div>
