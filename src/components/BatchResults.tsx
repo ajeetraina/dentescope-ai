@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CheckCircle, AlertTriangle, XCircle, Clock, FileImage, TrendingUp } from 'lucide-react';
+import ChatBot from './ChatBot';
 
 interface BatchResultsProps {
   data: {
@@ -254,6 +255,8 @@ export function BatchResults({ data }: BatchResultsProps) {
           </Tabs>
         </CardContent>
       </Card>
+
+      <ChatBot analysisData={data} />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Ruler, TrendingUp, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { AnnotatedImage } from './AnnotatedImage';
+import ChatBot from './ChatBot';
 
 interface AnalysisData {
   tooth_width_analysis: {
@@ -184,6 +185,8 @@ export function AnalysisResults({ data, imageFile, imageUrl }: AnalysisResultsPr
           analysisData={data} 
         />
       )}
+
+      <ChatBot analysisData={data} />
     </div>
   );
 }
