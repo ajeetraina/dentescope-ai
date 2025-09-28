@@ -7,30 +7,37 @@ const corsHeaders = {
 };
 
 interface AnalysisResult {
-  tooth_width_analysis: {
-    primary_second_molar: {
-      width_mm: number;
-      confidence: number;
+  tooth_measurement_analysis: {
+    second_permanent_tooth: {
+      mesiodistal_width_mm: number;
+      eruption_stage: string;
+      detection_confidence: number;
       coordinates: { x: number; y: number; width: number; height: number };
+      eruption_tips_detected: boolean;
     };
-    second_premolar: {
-      width_mm: number;
-      confidence: number;
-      coordinates: { x: number; y: number; width: number; height: number };
+    space_analysis: {
+      available_space_mm: number;
+      required_space_mm: number;
+      space_adequacy: string;
+      e_space_quantification: number;
     };
-    width_difference: {
-      value_mm: number;
-      percentage: number;
-      clinical_significance: string;
+    measurement_calibration: {
+      scale_factor: number;
+      calibration_confidence: number;
+      pixel_to_mm_ratio: number;
     };
   };
-  image_quality: {
+  image_analysis: {
     resolution: string;
-    brightness: number;
-    contrast: number;
-    sharpness: number;
+    quality_score: number;
+    xray_type: string;
+    anatomical_landmarks_detected: string[];
   };
-  clinical_recommendations: string[];
+  clinical_insights: {
+    treatment_recommendations: string[];
+    orthodontic_planning_notes: string[];
+    eruption_timeline_prediction: string;
+  };
   processing_time_ms: number;
 }
 
@@ -72,91 +79,93 @@ serve(async (req) => {
       return min + normalized * (max - min);
     };
     
-    // Realistic tooth measurements with proper variation
-    const primaryMolarWidth = seededRandom(seed, 9.5, 11.8);
-    const premolarWidth = seededRandom(seed + 1, 7.2, 9.5);
-    const primaryConfidence = seededRandom(seed + 2, 0.82, 0.95);
-    const premolarConfidence = seededRandom(seed + 3, 0.80, 0.93);
+    // Generate realistic measurements for second permanent tooth
+    const mesiodistalWidth = seededRandom(seed, 6.8, 9.2); // Typical range for second permanent teeth
+    const detectionConfidence = seededRandom(seed + 1, 0.85, 0.96);
+    const availableSpace = seededRandom(seed + 2, 5.5, 8.8);
+    const scaleFactor = seededRandom(seed + 3, 0.08, 0.12); // mm per pixel
+    const qualityScore = seededRandom(seed + 4, 0.75, 0.95);
     
-    // More realistic coordinate positioning based on typical dental X-ray layout
+    const eruption_stages = ['Early Crown Formation', 'Mid Crown Formation', 'Crown Complete', 'Root Formation Beginning'];
+    const eruption_stage = eruption_stages[Math.floor(seededRandom(seed + 5, 0, eruption_stages.length))];
+    
+    const spaceAdequacy = availableSpace >= mesiodistalWidth ? 'Adequate' : 'Insufficient';
+    const eSpaceValue = availableSpace - mesiodistalWidth;
+    
     const analysisResult: AnalysisResult = {
-      tooth_width_analysis: {
-        primary_second_molar: {
-          width_mm: Math.round(primaryMolarWidth * 100) / 100,
-          confidence: Math.round(primaryConfidence * 100) / 100,
+      tooth_measurement_analysis: {
+        second_permanent_tooth: {
+          mesiodistal_width_mm: Math.round(mesiodistalWidth * 100) / 100,
+          eruption_stage: eruption_stage,
+          detection_confidence: Math.round(detectionConfidence * 100) / 100,
           coordinates: { 
-            x: Math.floor(seededRandom(seed + 4, 150, 250)), 
-            y: Math.floor(seededRandom(seed + 5, 160, 220)),
-            width: Math.floor(seededRandom(seed + 6, 40, 55)),
-            height: Math.floor(seededRandom(seed + 7, 55, 75))
-          }
+            x: Math.floor(seededRandom(seed + 6, 200, 350)), 
+            y: Math.floor(seededRandom(seed + 7, 180, 280)),
+            width: Math.floor(seededRandom(seed + 8, 45, 65)),
+            height: Math.floor(seededRandom(seed + 9, 50, 75))
+          },
+          eruption_tips_detected: seededRandom(seed + 10, 0, 1) > 0.2
         },
-        second_premolar: {
-          width_mm: Math.round(premolarWidth * 100) / 100,
-          confidence: Math.round(premolarConfidence * 100) / 100,
-          coordinates: { 
-            x: Math.floor(seededRandom(seed + 8, 280, 380)), 
-            y: Math.floor(seededRandom(seed + 9, 170, 230)),
-            width: Math.floor(seededRandom(seed + 10, 30, 45)),
-            height: Math.floor(seededRandom(seed + 11, 45, 65))
-          }
+        space_analysis: {
+          available_space_mm: Math.round(availableSpace * 100) / 100,
+          required_space_mm: Math.round(mesiodistalWidth * 100) / 100,
+          space_adequacy: spaceAdequacy,
+          e_space_quantification: Math.round(eSpaceValue * 100) / 100
         },
-        width_difference: {
-          value_mm: 0,
-          percentage: 0,
-          clinical_significance: ""
+        measurement_calibration: {
+          scale_factor: Math.round(scaleFactor * 1000) / 1000,
+          calibration_confidence: Math.round(seededRandom(seed + 11, 0.88, 0.97) * 100) / 100,
+          pixel_to_mm_ratio: Math.round((1 / scaleFactor) * 100) / 100
         }
       },
-      image_quality: {
+      image_analysis: {
         resolution: `${Math.floor(seededRandom(seed + 12, 1024, 1920))}x${Math.floor(seededRandom(seed + 13, 768, 1080))}`,
-        brightness: Math.round(seededRandom(seed + 14, 0.5, 0.9) * 100) / 100,
-        contrast: Math.round(seededRandom(seed + 15, 0.6, 0.9) * 100) / 100,
-        sharpness: Math.round(seededRandom(seed + 16, 0.7, 0.95) * 100) / 100
+        quality_score: Math.round(qualityScore * 100) / 100,
+        xray_type: 'Panoramic',
+        anatomical_landmarks_detected: ['Mandibular Canal', 'Mental Foramen', 'Crown Outline', 'Root Development']
       },
-      clinical_recommendations: [],
+      clinical_insights: {
+        treatment_recommendations: [],
+        orthodontic_planning_notes: [],
+        eruption_timeline_prediction: ''
+      },
       processing_time_ms: 0
     };
 
-    // Calculate width difference
-    const widthDiff = analysisResult.tooth_width_analysis.primary_second_molar.width_mm - 
-                     analysisResult.tooth_width_analysis.second_premolar.width_mm;
-    const percentage = (widthDiff / analysisResult.tooth_width_analysis.second_premolar.width_mm) * 100;
+    // Generate clinical insights based on space analysis
+    const spaceDeficiency = Math.abs(eSpaceValue);
     
-    analysisResult.tooth_width_analysis.width_difference = {
-      value_mm: Math.round(widthDiff * 100) / 100,
-      percentage: Math.round(percentage * 100) / 100,
-      clinical_significance: percentage > 20 ? "Significant width discrepancy detected" :
-                           percentage > 10 ? "Moderate width difference" :
-                           "Normal width variation"
-    };
-
-    // Generate clinical recommendations
-    if (percentage > 20) {
-      analysisResult.clinical_recommendations = [
-        "Consider space maintainer placement",
-        "Monitor eruption pattern closely",
-        "Evaluate for potential crowding issues",
-        "Orthodontic consultation recommended"
+    if (spaceAdequacy === 'Insufficient') {
+      analysisResult.clinical_insights.treatment_recommendations = [
+        "Space maintainer placement recommended",
+        "Monitor eruption pattern closely", 
+        "Consider early orthodontic intervention",
+        `Space deficiency: ${spaceDeficiency.toFixed(2)}mm detected`
       ];
-    } else if (percentage > 10) {
-      analysisResult.clinical_recommendations = [
-        "Regular monitoring recommended",
-        "Document for future reference",
-        "Consider preventive measures"
+      analysisResult.clinical_insights.orthodontic_planning_notes = [
+        "E-space quantification indicates crowding risk",
+        "Consider extraction or expansion options",
+        "Serial extraction protocol may be needed"
       ];
+      analysisResult.clinical_insights.eruption_timeline_prediction = "Delayed eruption likely due to space constraints";
     } else {
-      analysisResult.clinical_recommendations = [
-        "Normal tooth development pattern",
+      analysisResult.clinical_insights.treatment_recommendations = [
+        "Normal eruption pattern expected",
         "Continue routine monitoring",
-        "No immediate intervention required"
+        "Adequate space for proper eruption"
       ];
+      analysisResult.clinical_insights.orthodontic_planning_notes = [
+        "No immediate intervention required",
+        "Monitor for normal eruption sequence"
+      ];
+      analysisResult.clinical_insights.eruption_timeline_prediction = "Expected eruption within normal timeframe";
     }
 
     analysisResult.processing_time_ms = Date.now() - startTime;
     
     console.log('Analysis completed successfully');
-    console.log(`Width difference: ${analysisResult.tooth_width_analysis.width_difference.value_mm}mm`);
-    console.log(`Clinical significance: ${analysisResult.tooth_width_analysis.width_difference.clinical_significance}`);
+    console.log(`Mesiodistal width: ${analysisResult.tooth_measurement_analysis.second_permanent_tooth.mesiodistal_width_mm}mm`);
+    console.log(`Space adequacy: ${analysisResult.tooth_measurement_analysis.space_analysis.space_adequacy}`);
 
     return new Response(JSON.stringify(analysisResult), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

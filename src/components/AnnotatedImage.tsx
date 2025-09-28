@@ -3,19 +3,22 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Eye } from 'lucide-react';
 
 interface AnnotatedImageProps {
-  imageFile: File | null;
+  imageFile?: File | null;
   imageUrl?: string;
   analysisData: {
-    tooth_width_analysis: {
-      primary_second_molar: {
-        width_mm: number;
-        confidence: number;
+    tooth_measurement_analysis: {
+      second_permanent_tooth: {
+        mesiodistal_width_mm: number;
+        detection_confidence: number;
         coordinates: { x: number; y: number; width: number; height: number };
+        eruption_tips_detected: boolean;
+        eruption_stage: string;
       };
-      second_premolar: {
-        width_mm: number;
-        confidence: number;
-        coordinates: { x: number; y: number; width: number; height: number };
+      space_analysis: {
+        available_space_mm: number;
+        required_space_mm: number;
+        space_adequacy: string;
+        e_space_quantification: number;
       };
     };
   };
@@ -61,95 +64,117 @@ export function AnnotatedImage({ imageFile, imageUrl, analysisData }: AnnotatedI
   }, [imageFile, imageUrl, analysisData]);
 
   const drawAnnotations = (ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number) => {
-    const { primary_second_molar, second_premolar } = analysisData.tooth_width_analysis;
+    const { second_permanent_tooth, space_analysis } = analysisData.tooth_measurement_analysis;
     
     // Check if coordinates exist
-    if (!primary_second_molar.coordinates || !second_premolar.coordinates) {
+    if (!second_permanent_tooth.coordinates) {
       console.warn('Coordinates not available for annotation');
       return;
     }
     
-    // Scale coordinates to canvas size (assuming coordinates are normalized 0-1)
-    const scaleCoords = (coords: { x: number; y: number; width: number; height: number }) => ({
-      x: coords.x * canvasWidth,
-      y: coords.y * canvasHeight,
-      width: coords.width * canvasWidth,
-      height: coords.height * canvasHeight
-    });
+    // Scale coordinates to canvas size (assuming coordinates are absolute pixel values)
+    const scaleX = canvasWidth / 800; // Adjust based on typical image width
+    const scaleY = canvasHeight / 600; // Adjust based on typical image height
+    
+    const toothX = second_permanent_tooth.coordinates.x * scaleX;
+    const toothY = second_permanent_tooth.coordinates.y * scaleY;
+    const toothWidth = second_permanent_tooth.coordinates.width * scaleX;
+    const toothHeight = second_permanent_tooth.coordinates.height * scaleY;
 
-    const molarCoords = scaleCoords(primary_second_molar.coordinates);
-    const premolarCoords = scaleCoords(second_premolar.coordinates);
-
-    // Set drawing styles
-    ctx.strokeStyle = '#3b82f6'; // Primary blue
-    ctx.fillStyle = 'rgba(59, 130, 246, 0.2)';
+    // Draw tooth outline
+    ctx.strokeStyle = '#3b82f6'; // Blue
+    ctx.fillStyle = 'rgba(59, 130, 246, 0.1)';
     ctx.lineWidth = 3;
-    ctx.font = '16px system-ui';
+    ctx.font = '14px system-ui';
 
-    // Draw primary second molar annotation
-    ctx.fillRect(molarCoords.x, molarCoords.y, molarCoords.width, molarCoords.height);
-    ctx.strokeRect(molarCoords.x, molarCoords.y, molarCoords.width, molarCoords.height);
+    // Draw tooth bounding box
+    ctx.fillRect(toothX, toothY, toothWidth, toothHeight);
+    ctx.strokeRect(toothX, toothY, toothWidth, toothHeight);
     
-    // Label for primary second molar
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(molarCoords.x, molarCoords.y - 30, 180, 25);
-    ctx.fillStyle = '#1e40af';
-    ctx.fillText(
-      `Primary Molar: ${primary_second_molar.width_mm.toFixed(2)}mm`,
-      molarCoords.x + 5,
-      molarCoords.y - 10
-    );
+    // Draw eruption tips if detected
+    if (second_permanent_tooth.eruption_tips_detected) {
+      ctx.strokeStyle = '#10b981'; // Green for eruption tips
+      ctx.lineWidth = 2;
+      const tipRadius = 6;
+      
+      // Left eruption tip
+      ctx.beginPath();
+      ctx.arc(toothX + toothWidth * 0.3, toothY + 5, tipRadius, 0, 2 * Math.PI);
+      ctx.stroke();
+      
+      // Right eruption tip  
+      ctx.beginPath();
+      ctx.arc(toothX + toothWidth * 0.7, toothY + 5, tipRadius, 0, 2 * Math.PI);
+      ctx.stroke();
+    }
 
-    // Draw second premolar annotation
-    ctx.fillStyle = '#10b981'; // Green
-    ctx.strokeStyle = '#10b981';
-    ctx.fillRect(premolarCoords.x, premolarCoords.y, premolarCoords.width, premolarCoords.height);
-    ctx.strokeRect(premolarCoords.x, premolarCoords.y, premolarCoords.width, premolarCoords.height);
-    
-    // Label for second premolar
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(premolarCoords.x, premolarCoords.y - 30, 180, 25);
-    ctx.fillStyle = '#047857';
-    ctx.fillText(
-      `Premolar: ${second_premolar.width_mm.toFixed(2)}mm`,
-      premolarCoords.x + 5,
-      premolarCoords.y - 10
-    );
-
-    // Draw measurement line between teeth
+    // Draw mesiodistal width measurement line
     ctx.strokeStyle = '#ef4444'; // Red
     ctx.lineWidth = 2;
-    ctx.setLineDash([10, 5]);
+    ctx.setLineDash([5, 5]);
     
-    const molarCenter = {
-      x: molarCoords.x + molarCoords.width / 2,
-      y: molarCoords.y + molarCoords.height / 2
-    };
-    const premolarCenter = {
-      x: premolarCoords.x + premolarCoords.width / 2,
-      y: premolarCoords.y + premolarCoords.height / 2
-    };
-
+    const measureY = toothY + toothHeight / 2;
     ctx.beginPath();
-    ctx.moveTo(molarCenter.x, molarCenter.y);
-    ctx.lineTo(premolarCenter.x, premolarCenter.y);
+    ctx.moveTo(toothX, measureY);
+    ctx.lineTo(toothX + toothWidth, measureY);
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Add measurement label in the middle
-    const midX = (molarCenter.x + premolarCenter.x) / 2;
-    const midY = (molarCenter.y + premolarCenter.y) / 2;
+    // Draw measurement arrows
+    const arrowSize = 8;
+    ctx.fillStyle = '#ef4444';
     
-    const widthDiff = analysisData.tooth_width_analysis.primary_second_molar.width_mm - 
-                    analysisData.tooth_width_analysis.second_premolar.width_mm;
+    // Left arrow
+    ctx.beginPath();
+    ctx.moveTo(toothX, measureY);
+    ctx.lineTo(toothX + arrowSize, measureY - arrowSize/2);
+    ctx.lineTo(toothX + arrowSize, measureY + arrowSize/2);
+    ctx.fill();
     
+    // Right arrow
+    ctx.beginPath();
+    ctx.moveTo(toothX + toothWidth, measureY);
+    ctx.lineTo(toothX + toothWidth - arrowSize, measureY - arrowSize/2);
+    ctx.lineTo(toothX + toothWidth - arrowSize, measureY + arrowSize/2);
+    ctx.fill();
+
+    // Labels
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(midX - 60, midY - 15, 120, 30);
-    ctx.fillStyle = '#dc2626';
+    ctx.fillRect(toothX, toothY - 40, 220, 35);
+    ctx.fillStyle = '#1e40af';
+    ctx.font = 'bold 14px system-ui';
     ctx.fillText(
-      `Δ ${widthDiff.toFixed(2)}mm`,
-      midX - 50,
-      midY + 5
+      `Second Permanent Tooth`,
+      toothX + 5,
+      toothY - 20
+    );
+    ctx.font = '12px system-ui';
+    ctx.fillText(
+      `Stage: ${second_permanent_tooth.eruption_stage}`,
+      toothX + 5,
+      toothY - 5
+    );
+
+    // Mesiodistal width label
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(toothX, toothY + toothHeight + 5, 200, 25);
+    ctx.fillStyle = '#dc2626';
+    ctx.font = 'bold 12px system-ui';
+    ctx.fillText(
+      `Mesiodistal Width: ${second_permanent_tooth.mesiodistal_width_mm.toFixed(1)}mm`,
+      toothX + 5,
+      toothY + toothHeight + 20
+    );
+
+    // Space analysis indicator
+    const spaceColor = space_analysis.space_adequacy === 'Adequate' ? '#10b981' : '#ef4444';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(toothX, toothY + toothHeight + 35, 180, 25);
+    ctx.fillStyle = spaceColor;
+    ctx.fillText(
+      `E-Space: ${space_analysis.e_space_quantification > 0 ? '+' : ''}${space_analysis.e_space_quantification.toFixed(1)}mm`,
+      toothX + 5,
+      toothY + toothHeight + 50
     );
   };
 
@@ -172,15 +197,15 @@ export function AnnotatedImage({ imageFile, imageUrl, analysisData }: AnnotatedI
         <div className="mt-4 flex flex-wrap gap-4 text-sm">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 bg-primary/20 border-2 border-primary rounded"></div>
-            <span>Primary Second Molar</span>
+            <span>Second Permanent Tooth</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-emerald-500/20 border-2 border-emerald-500 rounded"></div>
-            <span>Second Premolar</span>
+            <div className="w-4 h-4 bg-emerald-500/20 border-2 border-emerald-500 rounded-full"></div>
+            <span>Eruption Tips</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-1 bg-red-500 rounded"></div>
-            <span>Width Difference</span>
+            <span>Mesiodistal Width</span>
           </div>
         </div>
       </CardContent>
