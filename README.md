@@ -59,10 +59,6 @@ The application includes real dental radiographs from diverse patient cases:
 - Reliable confidence scoring for quality assurance
 - Fast processing times suitable for clinical workflows
 
-## Deployment
-
-The application is deployed on Lovable Cloud Platform and can be accessed at:
-**URL**: https://lovable.dev/projects/cc99f6dd-07fc-4321-bc42-9d0d4b3a2592
 
 ## Development
 
@@ -82,14 +78,3 @@ npm i
 npm run dev
 ```
 
-## Contributing
-
-This project welcomes contributions for:
-- Algorithm improvements
-- UI/UX enhancements
-- Additional clinical features
-- Performance optimizations
-
-## License
-
-Professional dental analysis tool for orthodontic and pediatric dental applications.
