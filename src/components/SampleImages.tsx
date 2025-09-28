@@ -10,23 +10,23 @@ const sampleImages = [
   {
     id: 1,
     name: "Primary Molar - Normal Development",
-    description: "Standard panoramic radiograph showing normal primary second molar and underlying premolar",
-    url: "/sample-images/sample_1.jpg",
-    fileName: "sample_1.jpg"
+    description: "7-year-old male patient showing normal primary second molar development",
+    url: "/sample-images/sample1.jpg",
+    fileName: "sample1.jpg"
   },
   {
     id: 2,
     name: "Width Discrepancy Case",
-    description: "Radiograph demonstrating significant width difference between primary and permanent teeth",
-    url: "/sample-images/sample_2.jpg", 
-    fileName: "sample_2.jpg"
+    description: "8-year-old female patient with potential width differences",
+    url: "/sample-images/sample2.jpg", 
+    fileName: "sample2.jpg"
   },
   {
     id: 3,
     name: "Bilateral Comparison",
-    description: "Bilateral view for comparing left and right side measurements",
-    url: "/sample-images/sample_3.jpg",
-    fileName: "sample_3.jpg"
+    description: "7-year-old female patient for bilateral measurement comparison",
+    url: "/sample-images/sample3.jpg",
+    fileName: "sample3.jpg"
   }
 ];
 
