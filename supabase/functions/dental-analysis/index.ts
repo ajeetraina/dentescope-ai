@@ -56,31 +56,49 @@ serve(async (req) => {
     
     console.log(`Processing image: ${imageFile.name}, size: ${imageFile.size} bytes`);
     
-    // Simulate calling your dental width prediction model
-    // In production, this would call your actual model API
+    // Simulate analysis with realistic variations based on image characteristics
     const startTime = Date.now();
     
-    // Mock analysis based on your model's expected output format
+    // Generate unique analysis based on image properties to avoid identical results
+    const imageHash = await crypto.subtle.digest('SHA-256', imageBuffer);
+    const hashArray = Array.from(new Uint8Array(imageHash));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    const seed = parseInt(hashHex.substring(0, 8), 16);
+    
+    // Use seed for consistent but varied results per image
+    const seededRandom = (seed: number, min: number, max: number) => {
+      const x = Math.sin(seed) * 10000;
+      const normalized = x - Math.floor(x);
+      return min + normalized * (max - min);
+    };
+    
+    // Realistic tooth measurements with proper variation
+    const primaryMolarWidth = seededRandom(seed, 9.5, 11.8);
+    const premolarWidth = seededRandom(seed + 1, 7.2, 9.5);
+    const primaryConfidence = seededRandom(seed + 2, 0.82, 0.95);
+    const premolarConfidence = seededRandom(seed + 3, 0.80, 0.93);
+    
+    // More realistic coordinate positioning based on typical dental X-ray layout
     const analysisResult: AnalysisResult = {
       tooth_width_analysis: {
         primary_second_molar: {
-          width_mm: 10.5 + Math.random() * 2, // Realistic width range
-          confidence: 0.85 + Math.random() * 0.1,
+          width_mm: Math.round(primaryMolarWidth * 100) / 100,
+          confidence: Math.round(primaryConfidence * 100) / 100,
           coordinates: { 
-            x: 120 + Math.floor(Math.random() * 50), 
-            y: 180 + Math.floor(Math.random() * 30),
-            width: 45 + Math.floor(Math.random() * 10),
-            height: 60 + Math.floor(Math.random() * 15)
+            x: Math.floor(seededRandom(seed + 4, 150, 250)), 
+            y: Math.floor(seededRandom(seed + 5, 160, 220)),
+            width: Math.floor(seededRandom(seed + 6, 40, 55)),
+            height: Math.floor(seededRandom(seed + 7, 55, 75))
           }
         },
         second_premolar: {
-          width_mm: 8.2 + Math.random() * 1.5,
-          confidence: 0.82 + Math.random() * 0.12,
+          width_mm: Math.round(premolarWidth * 100) / 100,
+          confidence: Math.round(premolarConfidence * 100) / 100,
           coordinates: { 
-            x: 115 + Math.floor(Math.random() * 60), 
-            y: 200 + Math.floor(Math.random() * 40),
-            width: 35 + Math.floor(Math.random() * 8),
-            height: 50 + Math.floor(Math.random() * 12)
+            x: Math.floor(seededRandom(seed + 8, 280, 380)), 
+            y: Math.floor(seededRandom(seed + 9, 170, 230)),
+            width: Math.floor(seededRandom(seed + 10, 30, 45)),
+            height: Math.floor(seededRandom(seed + 11, 45, 65))
           }
         },
         width_difference: {
@@ -90,10 +108,10 @@ serve(async (req) => {
         }
       },
       image_quality: {
-        resolution: `${1024 + Math.floor(Math.random() * 512)}x${768 + Math.floor(Math.random() * 256)}`,
-        brightness: 0.6 + Math.random() * 0.3,
-        contrast: 0.7 + Math.random() * 0.2,
-        sharpness: 0.8 + Math.random() * 0.15
+        resolution: `${Math.floor(seededRandom(seed + 12, 1024, 1920))}x${Math.floor(seededRandom(seed + 13, 768, 1080))}`,
+        brightness: Math.round(seededRandom(seed + 14, 0.5, 0.9) * 100) / 100,
+        contrast: Math.round(seededRandom(seed + 15, 0.6, 0.9) * 100) / 100,
+        sharpness: Math.round(seededRandom(seed + 16, 0.7, 0.95) * 100) / 100
       },
       clinical_recommendations: [],
       processing_time_ms: 0
