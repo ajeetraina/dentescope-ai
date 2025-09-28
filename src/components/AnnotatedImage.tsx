@@ -118,22 +118,22 @@ export function AnnotatedImage({ imageFile, imageUrl, analysisData }: AnnotatedI
     ctx.font = '16px Arial, sans-serif';
     ctx.fillText(`${premolar.width_mm.toFixed(2)}mm`, premolarBoxX + 8, premolarBoxY + 38);
 
-    // 3. Draw connecting lines from boxes to teeth
+    // 3. Draw connecting lines from boxes to EXACT tooth positions (where red circles are)
     ctx.strokeStyle = '#3b82f6';
     ctx.lineWidth = 2;
     ctx.setLineDash([]);
     
-    // Line from primary molar box to tooth
+    // Line from primary molar box to exact tooth position
     ctx.beginPath();
     ctx.moveTo(primaryBoxX + boxWidth/2, primaryBoxY + boxHeight);
-    ctx.lineTo(primaryToothX, primaryToothY - 30);
+    ctx.lineTo(primaryToothX, primaryToothY);
     ctx.stroke();
 
-    // Line from premolar box to tooth
+    // Line from premolar box to exact tooth position  
     ctx.strokeStyle = '#10b981';
     ctx.beginPath();
     ctx.moveTo(premolarBoxX + boxWidth/2, premolarBoxY + boxHeight);
-    ctx.lineTo(premolarToothX, premolarToothY - 30);
+    ctx.lineTo(premolarToothX, premolarToothY);
     ctx.stroke();
 
     // 4. Draw horizontal measurement line (red dashed)
@@ -179,7 +179,7 @@ export function AnnotatedImage({ imageFile, imageUrl, analysisData }: AnnotatedI
     ctx.arc(premolarToothX, premolarToothY, 22, 0, 2 * Math.PI);
     ctx.stroke();
 
-    // 7. Draw labels with arrows pointing to teeth
+    // 7. Draw labels with arrows pointing to exact tooth positions
     // Primary molar label
     const primaryLabelX = primaryToothX - 80;
     const primaryLabelY = primaryToothY + 60;
@@ -197,21 +197,21 @@ export function AnnotatedImage({ imageFile, imageUrl, analysisData }: AnnotatedI
     ctx.textAlign = 'left';
     ctx.fillText('Primary molar', primaryLabelX, primaryLabelY - 5);
     
-    // Arrow pointing to primary molar
+    // Arrow pointing to exact primary molar position
     ctx.strokeStyle = '#ef4444';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(primaryLabelX + 55, primaryLabelY - 20);
-    ctx.lineTo(primaryToothX - 15, primaryToothY + 15);
+    ctx.lineTo(primaryToothX, primaryToothY + 25);
     ctx.stroke();
     
-    // Arrow head
-    const angle1 = Math.atan2(primaryToothY + 15 - (primaryLabelY - 20), primaryToothX - 15 - (primaryLabelX + 55));
+    // Arrow head for primary molar
+    const angle1 = Math.atan2(primaryToothY + 25 - (primaryLabelY - 20), primaryToothX - (primaryLabelX + 55));
     ctx.beginPath();
-    ctx.moveTo(primaryToothX - 15, primaryToothY + 15);
-    ctx.lineTo(primaryToothX - 15 - 10 * Math.cos(angle1 - Math.PI/6), primaryToothY + 15 - 10 * Math.sin(angle1 - Math.PI/6));
-    ctx.moveTo(primaryToothX - 15, primaryToothY + 15);
-    ctx.lineTo(primaryToothX - 15 - 10 * Math.cos(angle1 + Math.PI/6), primaryToothY + 15 - 10 * Math.sin(angle1 + Math.PI/6));
+    ctx.moveTo(primaryToothX, primaryToothY + 25);
+    ctx.lineTo(primaryToothX - 10 * Math.cos(angle1 - Math.PI/6), primaryToothY + 25 - 10 * Math.sin(angle1 - Math.PI/6));
+    ctx.moveTo(primaryToothX, primaryToothY + 25);
+    ctx.lineTo(primaryToothX - 10 * Math.cos(angle1 + Math.PI/6), primaryToothY + 25 - 10 * Math.sin(angle1 + Math.PI/6));
     ctx.stroke();
 
     // Premolar label
@@ -230,21 +230,21 @@ export function AnnotatedImage({ imageFile, imageUrl, analysisData }: AnnotatedI
     ctx.font = 'bold 14px Arial, sans-serif';
     ctx.fillText('Premolar', premolarLabelX, premolarLabelY - 5);
     
-    // Arrow pointing to premolar
+    // Arrow pointing to exact premolar position
     ctx.strokeStyle = '#ef4444';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(premolarLabelX + 40, premolarLabelY - 20);
-    ctx.lineTo(premolarToothX + 10, premolarToothY + 18);
+    ctx.lineTo(premolarToothX, premolarToothY + 22);
     ctx.stroke();
     
-    // Arrow head
-    const angle2 = Math.atan2(premolarToothY + 18 - (premolarLabelY - 20), premolarToothX + 10 - (premolarLabelX + 40));
+    // Arrow head for premolar
+    const angle2 = Math.atan2(premolarToothY + 22 - (premolarLabelY - 20), premolarToothX - (premolarLabelX + 40));
     ctx.beginPath();
-    ctx.moveTo(premolarToothX + 10, premolarToothY + 18);
-    ctx.lineTo(premolarToothX + 10 - 10 * Math.cos(angle2 - Math.PI/6), premolarToothY + 18 - 10 * Math.sin(angle2 - Math.PI/6));
-    ctx.moveTo(premolarToothX + 10, premolarToothY + 18);
-    ctx.lineTo(premolarToothX + 10 - 10 * Math.cos(angle2 + Math.PI/6), premolarToothY + 18 - 10 * Math.sin(angle2 + Math.PI/6));
+    ctx.moveTo(premolarToothX, premolarToothY + 22);
+    ctx.lineTo(premolarToothX - 10 * Math.cos(angle2 - Math.PI/6), premolarToothY + 22 - 10 * Math.sin(angle2 - Math.PI/6));
+    ctx.moveTo(premolarToothX, premolarToothY + 22);
+    ctx.lineTo(premolarToothX - 10 * Math.cos(angle2 + Math.PI/6), premolarToothY + 22 - 10 * Math.sin(angle2 + Math.PI/6));
     ctx.stroke();
 
     // Reset text alignment
