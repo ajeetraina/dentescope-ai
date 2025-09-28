@@ -4,12 +4,31 @@ import { Progress } from '@/components/ui/progress';
 import { Ruler, TrendingUp, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 interface AnalysisData {
-  primaryMolarWidth: number;
-  premolarWidth: number;
-  widthDifference: number;
-  confidenceScore: number;
-  status: 'normal' | 'attention' | 'concern';
-  recommendations: string[];
+  tooth_width_analysis: {
+    primary_second_molar: {
+      width_mm: number;
+      confidence: number;
+      coordinates: { x: number; y: number; width: number; height: number };
+    };
+    second_premolar: {
+      width_mm: number;
+      confidence: number;
+      coordinates: { x: number; y: number; width: number; height: number };
+    };
+    width_difference: {
+      value_mm: number;
+      percentage: number;
+      clinical_significance: string;
+    };
+  };
+  image_quality: {
+    resolution: string;
+    brightness: number;
+    contrast: number;
+    sharpness: number;
+  };
+  clinical_recommendations: string[];
+  processing_time_ms: number;
 }
 
 interface AnalysisResultsProps {
@@ -50,8 +69,22 @@ export function AnalysisResults({ data }: AnalysisResultsProps) {
     }
   };
 
-  const statusConfig = getStatusConfig(data.status);
+  // Determine status based on width difference percentage
+  const getStatus = (percentage: number) => {
+    if (percentage > 20) return 'concern';
+    if (percentage > 10) return 'attention';
+    return 'normal';
+  };
+
+  const status = getStatus(Math.abs(data.tooth_width_analysis.width_difference.percentage));
+  const statusConfig = getStatusConfig(status);
   const StatusIcon = statusConfig.icon;
+  
+  // Calculate average confidence
+  const averageConfidence = (
+    (data.tooth_width_analysis.primary_second_molar.confidence + 
+     data.tooth_width_analysis.second_premolar.confidence) / 2 * 100
+  );
 
   return (
     <div className="space-y-6">
@@ -73,9 +106,9 @@ export function AnalysisResults({ data }: AnalysisResultsProps) {
           <div className="mt-4">
             <div className="flex justify-between text-sm mb-2">
               <span>Confidence Score</span>
-              <span className="font-medium">{data.confidenceScore}%</span>
+              <span className="font-medium">{averageConfidence.toFixed(1)}%</span>
             </div>
-            <Progress value={data.confidenceScore} className="h-2" />
+            <Progress value={averageConfidence} className="h-2" />
           </div>
         </CardContent>
       </Card>
@@ -92,16 +125,23 @@ export function AnalysisResults({ data }: AnalysisResultsProps) {
           <CardContent className="space-y-4">
             <div className="flex justify-between items-center p-3 bg-gradient-surface rounded-lg">
               <span className="text-sm font-medium">Primary Second Molar</span>
-              <span className="text-lg font-bold text-primary">{data.primaryMolarWidth.toFixed(2)}mm</span>
+              <span className="text-lg font-bold text-primary">
+                {data.tooth_width_analysis.primary_second_molar.width_mm.toFixed(2)}mm
+              </span>
             </div>
             <div className="flex justify-between items-center p-3 bg-gradient-surface rounded-lg">
               <span className="text-sm font-medium">Second Premolar</span>
-              <span className="text-lg font-bold text-primary">{data.premolarWidth.toFixed(2)}mm</span>
+              <span className="text-lg font-bold text-primary">
+                {data.tooth_width_analysis.second_premolar.width_mm.toFixed(2)}mm
+              </span>
             </div>
             <div className="flex justify-between items-center p-3 bg-primary-light rounded-lg border-l-4 border-l-primary">
               <span className="text-sm font-medium">Width Difference</span>
               <span className="text-lg font-bold text-primary-dark">
-                {data.widthDifference > 0 ? '+' : ''}{data.widthDifference.toFixed(2)}mm
+                {data.tooth_width_analysis.width_difference.value_mm > 0 ? '+' : ''}
+                {data.tooth_width_analysis.width_difference.value_mm.toFixed(2)}mm
+                ({data.tooth_width_analysis.width_difference.percentage > 0 ? '+' : ''}
+                {data.tooth_width_analysis.width_difference.percentage.toFixed(1)}%)
               </span>
             </div>
           </CardContent>
@@ -116,12 +156,18 @@ export function AnalysisResults({ data }: AnalysisResultsProps) {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {data.recommendations.map((recommendation, index) => (
+              {data.clinical_recommendations.map((recommendation, index) => (
                 <div key={index} className="flex items-start gap-3 p-3 bg-accent rounded-lg">
                   <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0" />
                   <p className="text-sm text-foreground">{recommendation}</p>
                 </div>
               ))}
+              
+              <div className="mt-4 p-3 bg-info/10 border border-info/20 rounded-lg">
+                <p className="text-sm text-foreground">
+                  <strong>Clinical Significance:</strong> {data.tooth_width_analysis.width_difference.clinical_significance}
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
