@@ -243,22 +243,24 @@ function calculateAnatomicalCoordinates(
   seed: number, 
   seededRandom: (baseSeed: number, min: number, max: number) => number
 ) {
-  // Calculate positions based on dental anatomy and image characteristics
+  // Calculate positions based on dental anatomy and reference image
+  // Primary molar: posterior mandibular region (back of lower jaw)
+  // Premolar: anterior to primary molar (in front) in mandibular region
   
-  // Primary molar region (posterior mandible, left side)
+  // Primary molar region (posterior mandible) - based on reference image positioning
   const primaryMolarRegion = {
-    minX: analysis.leftQuadrant.startX,
-    maxX: Math.floor(analysis.leftQuadrant.startX + (analysis.leftQuadrant.endX - analysis.leftQuadrant.startX) * 0.4),
-    minY: analysis.mandibleRegion.startY,
-    maxY: Math.floor(analysis.mandibleRegion.startY + (analysis.mandibleRegion.endY - analysis.mandibleRegion.startY) * 0.6)
+    minX: Math.floor(analysis.width * 0.15), // Left posterior region (15% from left)
+    maxX: Math.floor(analysis.width * 0.25), // (25% from left)
+    minY: Math.floor(analysis.height * 0.65), // Lower mandibular region (65% down)
+    maxY: Math.floor(analysis.height * 0.75)  // (75% down)
   };
   
-  // Premolar region (anterior to molar, left side)
+  // Premolar region (anterior to primary molar) - based on reference image positioning  
   const premolarRegion = {
-    minX: Math.floor(analysis.leftQuadrant.startX + (analysis.leftQuadrant.endX - analysis.leftQuadrant.startX) * 0.6),
-    maxX: analysis.leftQuadrant.endX,
-    minY: analysis.mandibleRegion.startY,
-    maxY: Math.floor(analysis.mandibleRegion.startY + (analysis.mandibleRegion.endY - analysis.mandibleRegion.startY) * 0.6)
+    minX: Math.floor(analysis.width * 0.35), // More central, anterior to molar (35% from left)
+    maxX: Math.floor(analysis.width * 0.45), // (45% from left)
+    minY: Math.floor(analysis.height * 0.67), // Slightly lower than molar (67% down)
+    maxY: Math.floor(analysis.height * 0.77)  // (77% down)
   };
 
   // Generate coordinates within anatomical regions
