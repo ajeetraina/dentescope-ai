@@ -174,6 +174,15 @@ serve(async (req) => {
     console.log(`Image: ${imageAnalysis.width}x${imageAnalysis.height}, Scale: ${imageAnalysis.scale}`);
     console.log(`Primary molar: ${analysisResult.tooth_width_analysis.primary_second_molar.width_mm}mm at (${coordinates.primaryMolar.x}, ${coordinates.primaryMolar.y})`);
     console.log(`Premolar: ${analysisResult.tooth_width_analysis.second_premolar.width_mm}mm at (${coordinates.premolar.x}, ${coordinates.premolar.y})`);
+    console.log(`Coordinate validation - Primary molar should be POSTERIOR (right side), Premolar should be ANTERIOR (left of primary molar)`);
+    console.log(`Primary molar X position: ${coordinates.primaryMolar.x} (${Math.round((coordinates.primaryMolar.x / imageAnalysis.width) * 100)}% from left)`);
+    console.log(`Premolar X position: ${coordinates.premolar.x} (${Math.round((coordinates.premolar.x / imageAnalysis.width) * 100)}% from left)`);
+    
+    if (coordinates.premolar.x >= coordinates.primaryMolar.x) {
+      console.log('ERROR: Premolar is positioned BEHIND primary molar - this is anatomically incorrect!');
+    } else {
+      console.log('CORRECT: Premolar is positioned ANTERIOR to primary molar');
+    }
 
     return new Response(JSON.stringify(analysisResult), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -244,23 +253,24 @@ function calculateAnatomicalCoordinates(
   seededRandom: (baseSeed: number, min: number, max: number) => number
 ) {
   // Calculate positions based on dental anatomy and reference image
-  // Primary molar: posterior mandibular region (back of lower jaw)
-  // Premolar: anterior to primary molar (in front) in mandibular region
+  // In panoramic X-rays: patient's left side appears on RIGHT side of image
+  // Primary molar: posterior mandibular region (back/right side)
+  // Premolar: anterior to primary molar (towards center, left of primary molar)
   
-  // Primary molar region (posterior mandible) - based on reference image positioning
+  // Primary molar region (posterior mandible) - RIGHT side of panoramic image
   const primaryMolarRegion = {
-    minX: Math.floor(analysis.width * 0.15), // Left posterior region (15% from left)
-    maxX: Math.floor(analysis.width * 0.25), // (25% from left)
+    minX: Math.floor(analysis.width * 0.55), // Posterior region (55% from left)
+    maxX: Math.floor(analysis.width * 0.70), // (70% from left)
     minY: Math.floor(analysis.height * 0.65), // Lower mandibular region (65% down)
-    maxY: Math.floor(analysis.height * 0.75)  // (75% down)
+    maxY: Math.floor(analysis.height * 0.80)  // (80% down)
   };
   
-  // Premolar region (anterior to primary molar) - based on reference image positioning  
+  // Premolar region (anterior to primary molar) - LEFT of primary molar
   const premolarRegion = {
-    minX: Math.floor(analysis.width * 0.35), // More central, anterior to molar (35% from left)
-    maxX: Math.floor(analysis.width * 0.45), // (45% from left)
-    minY: Math.floor(analysis.height * 0.67), // Slightly lower than molar (67% down)
-    maxY: Math.floor(analysis.height * 0.77)  // (77% down)
+    minX: Math.floor(analysis.width * 0.35), // Anterior to molar (35% from left)
+    maxX: Math.floor(analysis.width * 0.50), // (50% from left)
+    minY: Math.floor(analysis.height * 0.67), // Slightly lower (67% down)
+    maxY: Math.floor(analysis.height * 0.82)  // (82% down)
   };
 
   // Generate coordinates within anatomical regions
