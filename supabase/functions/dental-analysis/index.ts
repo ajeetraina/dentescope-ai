@@ -259,18 +259,18 @@ function calculateAnatomicalCoordinates(
   
   // Primary molar region (posterior mandible) - RIGHT side of panoramic image
   const primaryMolarRegion = {
-    minX: Math.floor(analysis.width * 0.55), // Posterior region (55% from left)
-    maxX: Math.floor(analysis.width * 0.70), // (70% from left)
-    minY: Math.floor(analysis.height * 0.65), // Lower mandibular region (65% down)
-    maxY: Math.floor(analysis.height * 0.80)  // (80% down)
+    minX: Math.floor(analysis.width * 0.72), // Posterior region (72% from left)
+    maxX: Math.floor(analysis.width * 0.82), // (82% from left)
+    minY: Math.floor(analysis.height * 0.68), // Lower mandibular region (68% down)
+    maxY: Math.floor(analysis.height * 0.78)  // (78% down)
   };
   
   // Premolar region (anterior to primary molar) - LEFT of primary molar
   const premolarRegion = {
-    minX: Math.floor(analysis.width * 0.35), // Anterior to molar (35% from left)
-    maxX: Math.floor(analysis.width * 0.50), // (50% from left)
-    minY: Math.floor(analysis.height * 0.67), // Slightly lower (67% down)
-    maxY: Math.floor(analysis.height * 0.82)  // (82% down)
+    minX: Math.floor(analysis.width * 0.38), // Anterior to molar (38% from left)
+    maxX: Math.floor(analysis.width * 0.48), // (48% from left)
+    minY: Math.floor(analysis.height * 0.70), // Lower mandibular (70% down)
+    maxY: Math.floor(analysis.height * 0.80)  // (80% down)
   };
 
   // Generate coordinates within anatomical regions
