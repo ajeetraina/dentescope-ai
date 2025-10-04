@@ -11,11 +11,13 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-analyzer = DentalWidthAnalyzer(model_path='models/best.pt')
+# Use the downloaded model (change this after training)
+MODEL_PATH = os.environ.get('MODEL_PATH', '../models/yolov8n.pt')
+analyzer = DentalWidthAnalyzer(model_path=MODEL_PATH)
 
 @app.route('/health', methods=['GET'])
 def health():
-    return jsonify({'status': 'healthy'})
+    return jsonify({'status': 'healthy', 'model': MODEL_PATH})
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
@@ -52,4 +54,4 @@ def analyze():
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port, debug=True)
