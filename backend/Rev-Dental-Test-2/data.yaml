@@ -1,0 +1,18 @@
+names:
+- 1st Molar
+- 1st Premolar
+- 2nd Molar
+- 2nd Premolar
+- Canine
+- Central Incisor
+- Lateral Incisor
+nc: 7
+roboflow:
+  license: CC BY 4.0
+  project: rev-dental-test
+  url: https://universe.roboflow.com/teeth-images/rev-dental-test/dataset/2
+  version: 2
+  workspace: teeth-images
+test: ../test/images
+train: ../train/images
+val: ../valid/images
