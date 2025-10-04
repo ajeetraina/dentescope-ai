@@ -1,0 +1,15 @@
+path: ./dataset
+train: images/train
+val: images/val
+test: images/test
+
+nc: 8
+names:
+  0: primary_second_molar_upper_right
+  1: primary_second_molar_upper_left
+  2: primary_second_molar_lower_left
+  3: primary_second_molar_lower_right
+  4: second_premolar_upper_right
+  5: second_premolar_upper_left
+  6: second_premolar_lower_left
+  7: second_premolar_lower_right
