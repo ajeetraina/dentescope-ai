@@ -1,0 +1,8 @@
+primary_second_molar_55
+primary_second_molar_65
+primary_second_molar_75
+primary_second_molar_85
+second_premolar_15
+second_premolar_25
+second_premolar_35
+second_premolar_45

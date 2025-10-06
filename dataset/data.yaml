@@ -1,15 +1,15 @@
-path: ./dataset
+path: /Users/ajeetsraina/toothy-width-mate/backend/dataset
 train: images/train
 val: images/val
 test: images/test
 
 nc: 8
 names:
-  0: primary_second_molar_upper_right
-  1: primary_second_molar_upper_left
-  2: primary_second_molar_lower_left
-  3: primary_second_molar_lower_right
-  4: second_premolar_upper_right
-  5: second_premolar_upper_left
-  6: second_premolar_lower_left
-  7: second_premolar_lower_right
+  0: primary_second_molar_55
+  1: primary_second_molar_65
+  2: primary_second_molar_75
+  3: primary_second_molar_85
+  4: second_premolar_15
+  5: second_premolar_25
+  6: second_premolar_35
+  7: second_premolar_45
