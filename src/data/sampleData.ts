@@ -4,7 +4,7 @@ export const sampleXRays: SampleXRay[] = [
   {
     id: 'sample-1',
     name: 'Patient A - Age 8',
-    imageUrl: 'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=800&h=600&fit=crop',
+    imageUrl: '/samples/sample-xray-1.jpg',
     patientAge: 8,
     description: 'Normal mixed dentition with primary second molars present',
     expectedFindings: 'Width difference of approximately 1.5-2mm expected'
@@ -12,7 +12,7 @@ export const sampleXRays: SampleXRay[] = [
   {
     id: 'sample-2',
     name: 'Patient B - Age 9',
-    imageUrl: 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=800&h=600&fit=crop',
+    imageUrl: '/samples/sample-xray-2.jpg',
     patientAge: 9,
     description: 'Early mixed dentition with emerging premolars',
     expectedFindings: 'Premolars beginning to develop, width difference 2-2.5mm'
@@ -20,7 +20,7 @@ export const sampleXRays: SampleXRay[] = [
   {
     id: 'sample-3',
     name: 'Patient C - Age 10',
-    imageUrl: 'https://images.unsplash.com/photo-1609840114035-3c981a782734?w=800&h=600&fit=crop',
+    imageUrl: '/samples/sample-xray-3.jpg',
     patientAge: 10,
     description: 'Transitional dentition with visible premolar development',
     expectedFindings: 'Clear premolar formation visible, width difference 1.8-2.2mm'
@@ -28,7 +28,7 @@ export const sampleXRays: SampleXRay[] = [
   {
     id: 'sample-4',
     name: 'Patient D - Age 7',
-    imageUrl: 'https://images.unsplash.com/photo-1598531228433-d2d0eb87c8f6?w=800&h=600&fit=crop',
+    imageUrl: '/samples/sample-xray-1.jpg',
     patientAge: 7,
     description: 'Primary dentition with early premolar buds',
     expectedFindings: 'Minimal premolar development, width difference 1.2-1.5mm'
@@ -36,7 +36,7 @@ export const sampleXRays: SampleXRay[] = [
   {
     id: 'sample-5',
     name: 'Patient E - Age 11',
-    imageUrl: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=800&h=600&fit=crop',
+    imageUrl: '/samples/sample-xray-2.jpg',
     patientAge: 11,
     description: 'Late mixed dentition with advanced premolar development',
     expectedFindings: 'Advanced premolar development, width difference 2.2-2.8mm'
