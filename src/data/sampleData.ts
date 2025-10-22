@@ -191,7 +191,7 @@ export function analyzeWidthDifference(teeth: DetectedTooth[]): {
   const averageDifference = differences.reduce((a, b) => a + b, 0) / differences.length;
   
   const findings: string[] = [];
-  const recommendation: string;
+  let recommendation: string;
   
   if (averageDifference < 1.0) {
     findings.push('Minimal width difference detected (< 1.0mm)');
