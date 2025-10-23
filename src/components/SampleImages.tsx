@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, Eye } from 'lucide-react';
+import { Eye } from 'lucide-react';
 
 interface SampleImagesProps {
   onSampleSelect: (imageUrl: string, fileName: string) => void;
@@ -57,37 +57,46 @@ export function SampleImages({ onSampleSelect }: SampleImagesProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Eye className="h-5 w-5 text-primary" />
-          Sample Dataset
+          Sample X-Ray Images
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Try the analysis with these sample dental radiographs from the repository
+          Try the tool with our pre-loaded sample panoramic X-rays from different age groups
         </p>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {sampleImages.map((sample) => (
-          <div
-            key={sample.id}
-            className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
-          >
-            <div className="flex-1">
-              <h4 className="font-medium text-foreground">{sample.name}</h4>
-              <p className="text-sm text-muted-foreground mt-1">
-                {sample.description}
-              </p>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {sampleImages.map((sample) => (
+            <div
+              key={sample.id}
+              onClick={() => handleSampleSelect(sample)}
+              className="group cursor-pointer border-2 border-border rounded-lg overflow-hidden hover:border-primary hover:shadow-lg transition-all"
+            >
+              <div className="aspect-video bg-muted overflow-hidden">
+                <img
+                  src={sample.url}
+                  alt={sample.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  onError={(e) => {
+                    // Fallback if image fails to load
+                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=800&auto=format&fit=crop';
+                  }}
+                />
+              </div>
+              <div className="p-4 bg-card">
+                <h3 className="font-bold text-base text-foreground mb-1">{sample.name}</h3>
+                <p className="text-sm text-muted-foreground mb-3">{sample.description}</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
+                    Age {sample.name.match(/\d+/)?.[0] || '8'}
+                  </span>
+                  <span className="text-xs text-muted-foreground group-hover:text-primary transition-colors">
+                    Click to analyze
+                  </span>
+                </div>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleSampleSelect(sample)}
-                className="text-primary hover:text-primary-foreground"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Use Sample
-              </Button>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </CardContent>
     </Card>
   );
