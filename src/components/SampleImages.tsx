@@ -11,64 +11,22 @@ const sampleImages = [
     id: 1,
     name: "Primary Molar - Normal Development",
     description: "7-year-old male patient showing normal primary second molar development",
-    url: "/sample-images/sample1.jpg",
+    url: "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=800&auto=format&fit=crop",
     fileName: "sample1.jpg"
   },
   {
     id: 2,
     name: "Width Discrepancy Case",
     description: "8-year-old female patient with potential width differences",
-    url: "/sample-images/sample2.jpg", 
+    url: "https://images.unsplash.com/photo-1606811971618-4486d14f3f99?w=800&auto=format&fit=crop", 
     fileName: "sample2.jpg"
   },
   {
     id: 3,
     name: "Bilateral Comparison",
     description: "7-year-old female patient for bilateral measurement comparison",
-    url: "/sample-images/sample3.jpg",
+    url: "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=800&auto=format&fit=crop",
     fileName: "sample3.jpg"
-  },
-  {
-    id: 4,
-    name: "Aarush - 7 Years Male",
-    description: "7-year-old male patient dental radiograph from clinical dataset",
-    url: "/sample-images/aarush_7yrs_male.jpg",
-    fileName: "aarush_7yrs_male.jpg"
-  },
-  {
-    id: 5,
-    name: "Afiya - 8 Years Female",
-    description: "8-year-old female patient dental radiograph from clinical dataset",
-    url: "/sample-images/afiya_8yrs_female.jpg",
-    fileName: "afiya_8yrs_female.jpg"
-  },
-  {
-    id: 6,
-    name: "Aksa - 7 Years Female",
-    description: "7-year-old female patient dental radiograph from clinical dataset",
-    url: "/sample-images/aksa_7yrs_female.jpg",
-    fileName: "aksa_7yrs_female.jpg"
-  },
-  {
-    id: 7,
-    name: "Amirul - 8 Years Male",
-    description: "8-year-old male patient dental radiograph from clinical dataset",
-    url: "/sample-images/amirul_8yrs_male.jpg",
-    fileName: "amirul_8yrs_male.jpg"
-  },
-  {
-    id: 8,
-    name: "Divisha - 6 Years Female",
-    description: "6-year-old female patient dental radiograph from clinical dataset",
-    url: "/sample-images/divisha_6yrs_female.jpg",
-    fileName: "divisha_6yrs_female.jpg"
-  },
-  {
-    id: 9,
-    name: "Dushyanth - 8 Years Male",
-    description: "8-year-old male patient dental radiograph from clinical dataset",
-    url: "/sample-images/dushyanth_8yrs_male.jpg",
-    fileName: "dushyanth_8yrs_male.jpg"
   }
 ];
 
