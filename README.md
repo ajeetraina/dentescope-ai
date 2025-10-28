@@ -1,4 +1,4 @@
-# 🦷 Dental Width Detection System
+# 🦷 Dentescope AI
 
 AI-powered tool for measuring tooth width differences between primary second molars and second premolars in dental panoramic radiographs.
 
