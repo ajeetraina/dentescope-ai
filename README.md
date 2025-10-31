@@ -283,76 +283,9 @@ dentescope-ai-complete/
 
 ---
 
-## 🔮 Roadmap
 
-### Short-term (1-3 months)
-- [ ] Multi-tooth classification (incisors, canines, molars)
-- [ ] Individual tooth numbering system
-- [ ] Improved calibration for mm measurements
-- [ ] Mobile app deployment
-- [ ] Real-time video processing
 
-### Long-term (6-12 months)
-- [ ] Disease detection (cavities, infections)
-- [ ] Treatment planning recommendations
-- [ ] 3D reconstruction from 2D X-rays
-- [ ] Integration with practice management systems
-- [ ] Multi-modal analysis (notes + images)
 
----
 
-## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 🙏 Acknowledgments
-
-- **Ultralytics Team** for the excellent YOLOv8 framework
-- **NVIDIA** for Jetson Thor hardware and CUDA support
-- **Docker** for containerization platform
-- **Hugging Face** for free model hosting and Spaces
-- **Anthropic Claude** for development assistance
-
----
-
-## 📞 Contact
-
-**Ajeet Singh Raina**  
-Docker Captain | AI/ML Enthusiast
-
-- 🌐 Website: [collabnix.com](https://collabnix.com)
-- 💼 LinkedIn: [ajeetsraina](https://linkedin.com/in/ajeetsraina)
-- 🐙 GitHub: [@ajeetraina](https://github.com/ajeetraina)
-- 🐦 Twitter: [@ajeetsraina](https://twitter.com/ajeetsraina)
-
----
-
-## 📊 Project Stats
-
-![GitHub stars](https://img.shields.io/github/stars/ajeetraina/dentescope-ai-complete?style=social)
-![GitHub forks](https://img.shields.io/github/forks/ajeetraina/dentescope-ai-complete?style=social)
-![GitHub watchers](https://img.shields.io/github/watchers/ajeetraina/dentescope-ai-complete?style=social)
-
----
-
-<div align="center">
-
-**⭐ Star this repo if you find it useful! ⭐**
-
-Made with ❤️ by [Ajeet Singh Raina](https://github.com/ajeetraina)
-
-</div>
