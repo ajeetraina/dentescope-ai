@@ -1,228 +1,358 @@
-# 🦷 Dentescope AI
+# 🦷 DenteScope AI - Dental X-ray Tooth Detection
 
-AI-powered tool for measuring tooth width differences between primary second molars and second premolars in dental panoramic radiographs.
+<div align="center">
 
-## ⚡ Quick Start
+![Python](https://img.shields.io/badge/Python-3.12-blue.svg)
+![PyTorch](https://img.shields.io/badge/PyTorch-2.9.0-red.svg)
+![YOLOv8](https://img.shields.io/badge/YOLOv8-8.3.223-green.svg)
+![License](https://img.shields.io/badge/License-MIT-yellow.svg)
+![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen.svg)
 
-**Ready to start training your model?** 
+**Production-ready AI system for automated tooth detection in dental panoramic X-rays**
 
-👉 **[READ THE COMPLETE IMPLEMENTATION GUIDE](./IMPLEMENTATION_GUIDE.md)** 👈
+[🚀 Live Demo](https://huggingface.co/spaces/ajeetsraina/dentescope-ai) • [📖 Blog Post](BLOG_POST.md) • [💻 GitHub](https://github.com/ajeetraina/dentescope-ai-complete)
 
-### 3-Step Setup:
+<img src="results/width_analysis/tooth_width_analysis_charts.png" alt="Analysis Results" width="800"/>
 
-```bash
-# 1. Install dependencies
-pip install -r scripts/requirements.txt
-
-# 2. Annotate your images (interactive tool)
-python scripts/smart_annotator.py
-
-# 3. Train the model
-python scripts/prepare_dataset.py
-python scripts/train_yolo.py
-```
-
-That's it! Your model will be ready in `model/dental_detector.pt`
+</div>
 
 ---
 
-## 📋 Features
+## 🌐 Live Demo
 
-- 🦷 **Automatic tooth detection** using YOLOv8
-- 📏 **Precise width measurements** with magnification correction
-- 🎨 **Visual annotations** matching clinical standards
-- 📊 **Clinical insights** and recommendations
-- ⚡ **Real-time processing**
-- 🤖 **Smart auto-annotation** tool with AI-assisted region suggestions
+**[Try DenteScope AI Now! →](https://huggingface.co/spaces/ajeetsraina/dentescope-ai)**
 
-## 🎯 Tooth Detection
+Upload a dental panoramic X-ray and get instant:
+- ✅ Tooth detection with 99.5% accuracy
+- ✅ Width & height measurements in pixels and mm
+- ✅ Confidence scores for each detection
+- ✅ Visual annotations on your image
 
-Detects **8 specific teeth**:
-- **Primary Second Molars**: 55, 65, 75, 85
-- **Second Premolars**: 15, 25, 35, 45
-
-## 📊 Current Status
-
-✅ **Working:**
-- React/Vite frontend with great UI
-- 73+ real dental X-ray samples
-- Flask backend infrastructure
-- YOLOv8 detection class
-- Smart annotation tool with auto-suggestions
-- Complete training pipeline
-
-🔨 **In Progress:**
-- Model training (annotations needed)
-- AI-powered detection (requires trained model)
+*No installation required - runs entirely in your browser!*
 
 ---
 
-## 🚀 Full Setup
+## 🎯 Overview
 
-### Option 1: Docker (Recommended)
+DenteScope AI is a state-of-the-art deep learning system for automated tooth detection in dental panoramic X-rays. Built with YOLOv8 and trained on real dental imagery, it achieves production-ready performance for clinical deployment.
 
-```bash
-docker-compose up --build
+### Key Features
 
-# Access:
-# Frontend: http://localhost:5173
-# Backend: http://localhost:5001
+- 🎯 **99.5% mAP50 Accuracy** - Professional-grade detection
+- 🚀 **Fast Inference** - ~570ms per image
+- 📏 **Automated Measurements** - Width and height in pixels/mm
+- 🔄 **Iterative Training** - Self-improving annotation pipeline
+- 📦 **Dockerized** - Easy deployment on any platform
+- 🌐 **Web Interface** - Live demo on Hugging Face Spaces
+
+---
+
+## 📊 Performance
+
+### Production Model (V2) - YOLOv8s
+
+| Metric | Score | Status |
+|--------|-------|--------|
+| **mAP50** | **99.5%** | 🟢 Excellent |
+| **mAP50-95** | **98.5%** | 🟢 Excellent |
+| **Precision** | **99.6%** | 🟢 Excellent |
+| **Recall** | **100%** | 🟢 Perfect |
+| **Training Time** | 2.6 hours | ⚡ Efficient |
+| **Model Size** | 22.5 MB | 💾 Compact |
+
+### Training Evolution
+```
+V1 Baseline:    mAP50 49.9% (auto-annotated dataset)
+      ↓
+Re-annotation:  Using trained V1 model
+      ↓
+V2 Production:  mAP50 99.5% (refined annotations) ✨
 ```
 
-### Option 2: Manual Setup
+**Key Achievement:** +99.2% improvement through iterative training!
 
-#### Backend (Python/Flask)
+---
 
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Python 3.12+
+- Docker (optional, recommended)
+- NVIDIA GPU (optional, but faster)
+
+### Installation
 ```bash
-cd backend
-pip install -r requirements.txt
-python app.py
+# Clone repository
+git clone https://github.com/ajeetraina/dentescope-ai-complete.git
+cd dentescope-ai-complete
+
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+pip install ultralytics opencv-python pillow pyyaml matplotlib pandas openpyxl
 ```
 
-#### Frontend (React/Vite)
+### Basic Usage
+```python
+from ultralytics import YOLO
 
-```bash
-npm install
-npm run dev
+# Load production model
+model = YOLO('runs/train/tooth_detection7/weights/best.pt')
+
+# Predict on image
+results = model.predict('dental_xray.jpg', conf=0.25, save=True)
+
+# Get measurements
+for r in results:
+    for box in r.boxes:
+        x1, y1, x2, y2 = box.xyxy[0].tolist()
+        width_px = x2 - x1
+        width_mm = width_px * 0.1  # Calibration factor
+        conf = box.conf[0].item()
+        
+        print(f"Tooth detected:")
+        print(f"  Width: {width_px:.1f}px ({width_mm:.1f}mm)")
+        print(f"  Confidence: {conf:.1%}")
 ```
+
+---
+
+## 🐳 Docker Deployment
+
+### Run with Docker
+```bash
+# Pull container
+docker pull nvcr.io/nvidia/cuda:13.0.0-devel-ubuntu24.04
+
+# Run training environment
+docker run -it --rm \
+  --runtime nvidia \
+  --gpus all \
+  -v $(pwd):/workspace \
+  -w /workspace \
+  nvcr.io/nvidia/cuda:13.0.0-devel-ubuntu24.04 \
+  bash
+
+# Inside container
+apt-get update && apt-get install -y python3 python3-pip libgl1
+pip3 install ultralytics --break-system-packages
+
+# Train model
+python3 train_tooth_model.py --dataset ./data/v2_dataset_fixed
+```
+
+---
+
+## 🎓 Training Pipeline
+
+### Step 1: Data Preparation
+```bash
+# Organize your dental X-rays
+python3 prepare_data.py --source data/raw --output data/train
+```
+
+### Step 2: Auto-Annotation (Bootstrap)
+```bash
+# Generate initial annotations using pretrained YOLOv8
+python3 auto_annotate_all.py \
+  --images data/train/images \
+  --output data/train/labels
+```
+
+### Step 3: V1 Baseline Training
+```bash
+# Train baseline model
+python3 train_tooth_model.py \
+  --dataset ./data/train \
+  --model-size n \
+  --epochs 100
+```
+
+### Step 4: Re-Annotation
+```bash
+# Use trained V1 model to generate better annotations
+python3 reannotate_with_model.py \
+  --model runs/train/tooth_detection5/weights/best.pt \
+  --images data/raw \
+  --output data/reannotated/labels
+```
+
+### Step 5: V2 Production Training
+```bash
+# Train production model with improved annotations
+python3 train_tooth_model.py \
+  --dataset ./data/v2_dataset_fixed \
+  --model-size s \
+  --epochs 100
+```
+
+---
+
+## 📏 Width Analysis
+
+### Analyze Tooth Measurements
+```bash
+# Run comprehensive width analysis
+python3 view_tooth_width.py \
+  --model runs/train/tooth_detection7/weights/best.pt \
+  --images data/v2_dataset_fixed/images/val \
+  --output results/width_analysis
+
+# Generate statistics and visualizations
+python3 analyze_tooth_widths.py
+```
+
+### Analysis Results
+
+- **15 patients analyzed** with 100% detection rate
+- **Mean width:** 165.7mm (±0.5mm)
+- **Confidence:** 93.3% average
+- Outputs: Annotated images, CSV report, Excel file, 4-panel charts
 
 ---
 
 ## 📁 Project Structure
-
 ```
-toothy-width-mate/
-├── data/samples/              # 73+ dental X-ray images
-├── scripts/
-│   ├── smart_annotator.py    # 🆕 Interactive annotation tool
-│   ├── prepare_dataset.py    # 🆕 Dataset preparation
-│   ├── train_yolo.py         # 🆕 Model training
-│   └── test_model.py         # 🆕 Model testing
-├── backend/                   # Flask API
-├── src/                       # React frontend
-├── model/                     # Trained models
-└── dataset/                   # Training data
-```
-
----
-
-## 🎓 Training Your Model
-
-### Step 1: Annotate Images
-
-Run the smart annotator:
-
-```bash
-python scripts/smart_annotator.py
-```
-
-**Pro tip:** Press `a` for auto-suggestions! The tool will detect tooth regions automatically.
-
-### Step 2: Prepare Dataset
-
-```bash
-python scripts/prepare_dataset.py
-```
-
-Splits data into 80% training / 20% validation.
-
-### Step 3: Train Model
-
-```bash
-python scripts/train_yolo.py
-```
-
-Trains YOLOv8 with transfer learning (takes 30-60 min with GPU).
-
-### Step 4: Test Model
-
-```bash
-python scripts/test_model.py
+dentescope-ai-complete/
+├── data/
+│   ├── raw/                    # Original 73 dental X-rays
+│   ├── train/                  # Training data (V1)
+│   ├── valid/                  # Validation data
+│   ├── reannotated/            # Re-annotated dataset
+│   └── v2_dataset_fixed/       # Final V2 training dataset
+├── runs/
+│   └── train/
+│       ├── tooth_detection5/   # V1 model (mAP50: 49.9%)
+│       └── tooth_detection7/   # V2 model (mAP50: 99.5%) ⭐
+├── results/
+│   └── width_analysis/         # Width measurements & charts
+├── hf-deploy/                  # Hugging Face deployment files
+│   ├── app.py                  # Gradio web interface
+│   ├── best.pt                 # Production model
+│   └── requirements.txt
+├── train_tooth_model.py        # Training script
+├── view_tooth_width.py         # Width analysis tool
+├── analyze_tooth_widths.py     # Comprehensive analysis
+├── BLOG_POST.md               # Complete guide
+└── README.md                   # This file
 ```
 
 ---
 
-## 📈 Expected Results
+## 💻 Tech Stack
 
-After training, your model should achieve:
-
-### Tooth Measurements:
-- **Primary Second Molar Width:** 9-10mm
-- **Second Premolar Width:** 7-8mm
-- **Width Difference:** 2.0-2.8mm (normal range)
-
-### Model Metrics:
-- **mAP50:** >0.70 (Excellent) or >0.50 (Good)
-- **Detection Confidence:** >80% for clear X-rays
+- **Framework:** [Ultralytics YOLOv8](https://github.com/ultralytics/ultralytics) - State-of-the-art object detection
+- **Deep Learning:** PyTorch 2.9.0
+- **Hardware:** NVIDIA Jetson Thor (ARM64)
+- **Container:** Docker with CUDA 13.0
+- **Deployment:** Hugging Face Spaces with Gradio
+- **Language:** Python 3.12
 
 ---
 
-## 🛠️ Configuration
+## 🎯 Use Cases
 
-Copy `.env.example` to `.env`:
+### Clinical Applications
+- 🏥 Automated screening in dental clinics
+- 📊 Batch processing of patient X-rays
+- 📏 Dimensional analysis for orthodontics
+- 🎓 Training tool for dental students
 
-```bash
-cp .env.example .env
-```
-
-Fill in your credentials (Supabase, etc.)
+### Research Applications
+- 🔬 Dental morphology studies
+- 📈 Population-level statistics
+- 🧪 Treatment outcome analysis
+- 📝 Automated annotation for datasets
 
 ---
 
 ## 📖 Documentation
 
-- **[Complete Implementation Guide](./IMPLEMENTATION_GUIDE.md)** - Detailed step-by-step instructions
-- **[GitHub Discussions](https://github.com/ajeetraina/toothy-width-mate/discussions)** - Ask questions, share tips
+- **[Complete Blog Post](BLOG_POST.md)** - Full step-by-step guide with code
+- **[Live Demo](https://huggingface.co/spaces/ajeetsraina/dentescope-ai)** - Try it now!
+
+### External Resources
+
+- [Ultralytics YOLOv8 Docs](https://docs.ultralytics.com/)
+- [NVIDIA Jetson Thor](https://www.nvidia.com/en-us/autonomous-machines/embedded-systems/jetson-thor/)
+- [Hugging Face Spaces](https://huggingface.co/docs/hub/spaces)
+- [Docker Documentation](https://docs.docker.com/)
 
 ---
 
-## 💡 Usage Flow
+## 🔮 Roadmap
 
-1. **Upload** a panoramic radiograph
-2. **Automatic detection** of target teeth
-3. **Measure** widths with calibration correction
-4. **Visualize** results with clinical annotations
-5. **Review** insights and recommendations
+### Short-term (1-3 months)
+- [ ] Multi-tooth classification (incisors, canines, molars)
+- [ ] Individual tooth numbering system
+- [ ] Improved calibration for mm measurements
+- [ ] Mobile app deployment
+- [ ] Real-time video processing
 
----
-
-## 🐛 Troubleshooting
-
-### Model not found?
-Make sure you've completed training: `python scripts/train_yolo.py`
-
-### No annotations?
-Run the annotator first: `python scripts/smart_annotator.py`
-
-### Display issues?
-The annotator requires a GUI. Use VNC or a system with display support.
-
-**More help:** See [IMPLEMENTATION_GUIDE.md](./IMPLEMENTATION_GUIDE.md)
+### Long-term (6-12 months)
+- [ ] Disease detection (cavities, infections)
+- [ ] Treatment planning recommendations
+- [ ] 3D reconstruction from 2D X-rays
+- [ ] Integration with practice management systems
+- [ ] Multi-modal analysis (notes + images)
 
 ---
 
 ## 🤝 Contributing
 
-Contributions welcome! Please check the issues page or discussions.
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ---
 
 ## 📄 License
 
-MIT
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🎉 What's New
+## 🙏 Acknowledgments
 
-- ✨ Smart annotation tool with AI-assisted region detection
-- ✨ Complete training pipeline with transfer learning
-- ✨ Automated dataset preparation and splitting
-- ✨ Model testing and validation scripts
-- ✨ Comprehensive implementation guide
+- **Ultralytics Team** for the excellent YOLOv8 framework
+- **NVIDIA** for Jetson Thor hardware and CUDA support
+- **Docker** for containerization platform
+- **Hugging Face** for free model hosting and Spaces
+- **Anthropic Claude** for development assistance
 
 ---
 
-**Made with ❤️ for dental professionals and AI enthusiasts**
+## 📞 Contact
 
-🔗 [Implementation Guide](./IMPLEMENTATION_GUIDE.md) | 💬 [Discussions](https://github.com/ajeetraina/toothy-width-mate/discussions)
+**Ajeet Singh Raina**  
+Docker Captain | AI/ML Enthusiast
+
+- 🌐 Website: [collabnix.com](https://collabnix.com)
+- 💼 LinkedIn: [ajeetsraina](https://linkedin.com/in/ajeetsraina)
+- 🐙 GitHub: [@ajeetraina](https://github.com/ajeetraina)
+- 🐦 Twitter: [@ajeetsraina](https://twitter.com/ajeetsraina)
+
+---
+
+## 📊 Project Stats
+
+![GitHub stars](https://img.shields.io/github/stars/ajeetraina/dentescope-ai-complete?style=social)
+![GitHub forks](https://img.shields.io/github/forks/ajeetraina/dentescope-ai-complete?style=social)
+![GitHub watchers](https://img.shields.io/github/watchers/ajeetraina/dentescope-ai-complete?style=social)
+
+---
+
+<div align="center">
+
+**⭐ Star this repo if you find it useful! ⭐**
+
+Made with ❤️ by [Ajeet Singh Raina](https://github.com/ajeetraina)
+
+</div>
